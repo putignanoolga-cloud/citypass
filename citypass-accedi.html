@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>CityPass — Accedi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
+
+<style>
+:root {
+  --bg: #F5F2ED;
+  --surface: #FDFCFA;
+  --surface2: #EFEBE4;
+  --accent: #2B5F3E;
+  --accent2: #E8A045;
+  --text: #1A1A18;
+  --text2: #6B6860;
+  --text3: #9E9B94;
+  --border: rgba(26,26,24,0.10);
+  --border2: rgba(26,26,24,0.18);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 2px 16px rgba(26,26,24,0.08);
+  --shadow-lg: 0 8px 40px rgba(26,26,24,0.13);
+  --font: 'DM Sans', sans-serif;
+  --font-display: 'DM Serif Display', serif;
+  --error: #C0392B;
+  --error-bg: #FDF0EE;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  font-family: var(--font-display); font-size: 22px; color: var(--accent);
+  cursor: pointer; text-decoration: none;
+}
+.topbar-link {
+  font-size: 13px; font-weight: 500; color: var(--text3);
+  text-decoration: none; cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+}
+.topbar-link:hover { color: var(--text2); }
+
+/* ── HERO STRIP ── */
+.hero-strip {
+  background: var(--accent);
+  padding: 32px 24px 28px;
+  position: relative; overflow: hidden;
+}
+.hero-strip::before {
+  content: ''; position: absolute;
+  top: -50px; right: -50px;
+  width: 200px; height: 200px;
+  background: rgba(255,255,255,0.05); border-radius: 50%;
+}
+.hero-strip::after {
+  content: ''; position: absolute;
+  bottom: -40px; left: 10px;
+  width: 140px; height: 140px;
+  background: rgba(255,255,255,0.04); border-radius: 50%;
+}
+.hero-eyebrow {
+  font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.5);
+  text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 6px;
+  position: relative; z-index: 1;
+}
+.hero-title {
+  font-family: var(--font-display); font-size: 34px; color: #fff;
+  line-height: 1.1; position: relative; z-index: 1;
+}
+.hero-sub {
+  font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 6px;
+  position: relative; z-index: 1;
+}
+
+/* ── CARD ── */
+.card {
+  background: var(--surface);
+  margin: 20px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* ── SOCIAL BUTTONS ── */
+.social-section { padding: 20px 20px 16px; }
+.social-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 12px 16px; margin-bottom: 10px;
+  border-radius: var(--radius-sm); border: 1px solid var(--border2);
+  background: var(--surface); font-family: var(--font);
+  font-size: 14px; font-weight: 500; color: var(--text);
+  cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.social-btn:last-child { margin-bottom: 0; }
+.social-btn:hover { background: var(--surface2); border-color: var(--border2); }
+.social-btn:active { transform: scale(0.99); }
+.social-icon { width: 20px; height: 20px; flex-shrink: 0; }
+
+/* ── DIVIDER ── */
+.divider {
+  display: flex; align-items: center; gap: 12px;
+  padding: 4px 20px 20px;
+}
+.divider-line { flex: 1; height: 1px; background: var(--border); }
+.divider-text { font-size: 12px; color: var(--text3); font-weight: 500; white-space: nowrap; }
+
+/* ── FORM ── */
+.form-body { padding: 0 20px 8px; }
+
+.field { margin-bottom: 16px; }
+.field-label {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.field-label span {
+  font-size: 12px; font-weight: 600; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.field-label a {
+  font-size: 12px; font-weight: 500; color: var(--accent);
+  text-decoration: none; cursor: pointer;
+}
+.field-label a:hover { text-decoration: underline; }
+
+.input-wrap { position: relative; }
+.input-wrap i {
+  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+  font-size: 18px; color: var(--text3); pointer-events: none;
+  transition: color 0.15s;
+}
+.input-wrap input {
+  width: 100%; padding: 12px 44px 12px 40px;
+  background: var(--bg); border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); font-family: var(--font);
+  font-size: 15px; color: var(--text); outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.input-wrap input::placeholder { color: var(--text3); }
+.input-wrap input:focus {
+  border-color: var(--accent); background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(43,95,62,0.11);
+}
+.input-wrap input:focus + i,
+.input-wrap input:focus ~ i.left-icon { color: var(--accent); }
+.input-wrap .left-icon { left: 13px; }
+
+.input-wrap input:focus ~ .field-icon { color: var(--accent); }
+.field-icon-left {
+  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+  font-size: 18px; color: var(--text3); pointer-events: none; transition: color 0.15s;
+}
+input:focus ~ .field-icon-left { color: var(--accent); }
+
+.eye-btn {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  color: var(--text3); font-size: 18px; padding: 4px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color 0.15s;
+}
+.eye-btn:hover { color: var(--text2); }
+
+.input-error {
+  display: none; font-size: 12px; color: var(--error);
+  margin-top: 5px; display: flex; align-items: center; gap: 4px;
+}
+.input-error i { font-size: 13px; }
+
+.field.has-error .input-wrap input {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px rgba(192,57,43,0.10);
+}
+.field.has-error .input-error { display: flex; }
+
+/* ── REMEMBER ── */
+.remember-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 20px 20px;
+}
+.custom-check {
+  width: 18px; height: 18px; border-radius: 5px;
+  border: 1.5px solid var(--border2); background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0; transition: all 0.15s;
+}
+.custom-check.checked { background: var(--accent); border-color: var(--accent); }
+.custom-check i { font-size: 12px; color: #fff; display: none; }
+.custom-check.checked i { display: block; }
+.remember-label {
+  font-size: 13px; color: var(--text2); cursor: pointer; user-select: none;
+}
+
+/* ── CTA BUTTON ── */
+.cta-section { padding: 0 20px 20px; }
+.btn-primary {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px;
+  background: var(--accent); color: #fff; border: none;
+  border-radius: var(--radius); font-family: var(--font);
+  font-size: 16px; font-weight: 600; cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  position: relative; overflow: hidden;
+}
+.btn-primary:hover { opacity: 0.88; }
+.btn-primary:active { transform: scale(0.99); }
+.btn-primary.loading { pointer-events: none; }
+.btn-primary.loading .btn-text { opacity: 0; }
+.btn-spinner {
+  display: none; position: absolute;
+  width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.btn-primary.loading .btn-spinner { display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── ERROR BANNER ── */
+.error-banner {
+  display: none; margin: 0 20px 16px;
+  background: var(--error-bg); border: 1px solid rgba(192,57,43,0.2);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  font-size: 13px; color: var(--error);
+  align-items: center; gap: 10px;
+}
+.error-banner.show { display: flex; }
+.error-banner i { font-size: 18px; flex-shrink: 0; }
+
+/* ── REGISTER LINK ── */
+.register-nudge {
+  text-align: center; padding: 4px 20px 24px;
+  font-size: 14px; color: var(--text3);
+}
+.register-nudge a {
+  color: var(--accent); font-weight: 600;
+  text-decoration: none; cursor: pointer;
+}
+.register-nudge a:hover { text-decoration: underline; }
+
+/* ── SUCCESS STATE ── */
+.success-screen {
+  display: none; flex-direction: column; align-items: center;
+  padding: 48px 24px 32px; text-align: center; flex: 1;
+}
+.success-screen.show { display: flex; }
+.success-ring {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: #D4EAD9; display: flex; align-items: center;
+  justify-content: center; margin-bottom: 20px;
+  font-size: 36px; color: var(--accent);
+}
+.success-title { font-family: var(--font-display); font-size: 30px; margin-bottom: 8px; }
+.success-sub { font-size: 14px; color: var(--text2); line-height: 1.6; max-width: 270px; margin-bottom: 32px; }
+.btn-outline {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; padding: 14px;
+  background: transparent; color: var(--accent);
+  border: 1.5px solid var(--accent); border-radius: var(--radius);
+  font-family: var(--font); font-size: 16px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s;
+  text-decoration: none;
+}
+.btn-outline:hover { background: rgba(43,95,62,0.06); }
+
+/* ── FORGOT PASSWORD PANEL ── */
+.forgot-panel {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.45); align-items: flex-end; justify-content: center;
+}
+.forgot-panel.open { display: flex; }
+.forgot-sheet {
+  background: var(--surface); border-radius: 24px 24px 0 0;
+  width: 100%; max-width: 430px; padding: 0 0 40px;
+  animation: slideUp 0.22s ease;
+}
+@keyframes slideUp { from { transform: translateY(50px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+.sheet-handle { width: 40px; height: 4px; background: var(--border2); border-radius: 2px; margin: 14px auto 20px; }
+.sheet-title { font-family: var(--font-display); font-size: 26px; padding: 0 24px 6px; }
+.sheet-sub { font-size: 14px; color: var(--text3); padding: 0 24px 24px; line-height: 1.5; }
+.sheet-field { padding: 0 24px 20px; }
+.sheet-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.sheet-field input {
+  width: 100%; padding: 12px 14px;
+  background: var(--bg); border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); font-family: var(--font);
+  font-size: 15px; color: var(--text); outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.sheet-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,95,62,0.11); }
+.sheet-cta {
+  display: block; width: calc(100% - 48px); margin: 0 24px;
+  padding: 14px; background: var(--accent); color: #fff; border: none;
+  border-radius: var(--radius); font-family: var(--font);
+  font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+}
+.sheet-cta:hover { opacity: 0.88; }
+.sheet-cancel {
+  display: block; width: calc(100% - 48px); margin: 12px 24px 0;
+  padding: 13px; background: transparent; color: var(--text3);
+  border: 1px solid var(--border2); border-radius: var(--radius);
+  font-family: var(--font); font-size: 14px; cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<!-- ── TOPBAR ── -->
+<div class="topbar">
+  <a class="logo" href="citypass.html">CityPass</a>
+  <a class="topbar-link" href="citypass.html">
+    <i class="ti ti-arrow-left" style="font-size:16px"></i> Torna all'app
+  </a>
+</div>
+
+<!-- ── MAIN CONTENT ── -->
+<div id="login-view">
+
+  <!-- Hero -->
+  <div class="hero-strip">
+    <div class="hero-eyebrow">Accesso utente</div>
+    <div class="hero-title">Bentornato</div>
+    <div class="hero-sub">Riprendi da dove avevi lasciato</div>
+  </div>
+
+  <!-- Social login -->
+  <div class="card">
+    <div class="social-section">
+      <button class="social-btn" onclick="socialLogin('Google')">
+        <svg class="social-icon" viewBox="0 0 24 24" fill="none">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.61z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Continua con Google
+      </button>
+      <button class="social-btn" onclick="socialLogin('Apple')">
+        <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4zm-3.1-17.5c.06 2.16-1.63 3.88-3.62 3.73-.28-1.96 1.49-3.88 3.62-3.73z"/>
+        </svg>
+        Continua con Apple
+      </button>
+    </div>
+
+    <!-- Divider -->
+    <div class="divider">
+      <div class="divider-line"></div>
+      <div class="divider-text">oppure accedi con email</div>
+      <div class="divider-line"></div>
+    </div>
+
+    <!-- Error banner -->
+    <div class="error-banner" id="error-banner">
+      <i class="ti ti-alert-circle"></i>
+      <span id="error-msg">Email o password non corretti. Riprova.</span>
+    </div>
+
+    <!-- Form -->
+    <div class="form-body">
+
+      <div class="field" id="field-email">
+        <div class="field-label"><span>Email</span></div>
+        <div class="input-wrap">
+          <i class="ti ti-mail" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--text3);pointer-events:none" id="icon-email"></i>
+          <input type="email" id="input-email" placeholder="nome@email.com"
+            oninput="clearError()" onfocus="focusIcon('icon-email')" onblur="blurIcon('icon-email','input-email')" />
+          <button class="eye-btn" style="display:none"></button>
+        </div>
+        <div class="input-error"><i class="ti ti-alert-circle"></i><span id="err-email">Inserisci un indirizzo email valido</span></div>
+      </div>
+
+      <div class="field" id="field-password">
+        <div class="field-label">
+          <span>Password</span>
+          <a onclick="openForgot()">Password dimenticata?</a>
+        </div>
+        <div class="input-wrap">
+          <i class="ti ti-lock" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--text3);pointer-events:none" id="icon-pw"></i>
+          <input type="password" id="input-password" placeholder="••••••••"
+            oninput="clearError()" onfocus="focusIcon('icon-pw')" onblur="blurIcon('icon-pw','input-password')"
+            onkeydown="if(event.key==='Enter')doLogin()" />
+          <button class="eye-btn" id="eye-btn" onclick="toggleEye()" title="Mostra/nascondi password">
+            <i class="ti ti-eye" id="eye-icon"></i>
+          </button>
+        </div>
+        <div class="input-error"><i class="ti ti-alert-circle"></i><span id="err-pw">La password deve essere di almeno 8 caratteri</span></div>
+      </div>
+
+    </div>
+
+    <!-- Remember me -->
+    <div class="remember-row" onclick="toggleRemember()">
+      <div class="custom-check" id="remember-check">
+        <i class="ti ti-check"></i>
+      </div>
+      <span class="remember-label">Ricordami su questo dispositivo</span>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-section">
+      <button class="btn-primary" id="login-btn" onclick="doLogin()">
+        <div class="btn-spinner"></div>
+        <span class="btn-text">Accedi</span>
+      </button>
+    </div>
+
+    <!-- Register nudge -->
+    <div class="register-nudge">
+      Non hai ancora un account? <a href="citypass-registrati.html">Registrati gratis</a>
+    </div>
+
+  </div><!-- /card -->
+
+</div><!-- /login-view -->
+
+<!-- ── SUCCESS VIEW ── -->
+<div class="success-screen" id="success-view">
+  <div class="success-ring"><i class="ti ti-check"></i></div>
+  <div class="success-title">Bentornato!</div>
+  <div class="success-sub">Accesso effettuato con successo. Sei pronto a trovare o offrire il tuo prossimo passaggio.</div>
+  <a class="btn-outline" href="citypass.html" style="width:280px">
+    <i class="ti ti-arrow-right" style="margin-right:6px"></i> Vai all'app
+  </a>
+</div>
+
+<!-- ── FORGOT PASSWORD SHEET ── -->
+<div class="forgot-panel" id="forgot-panel" onclick="closeForgotOutside(event)">
+  <div class="forgot-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Recupera password</div>
+    <div class="sheet-sub">Inserisci la tua email e ti mandiamo un link per reimpostare la password.</div>
+    <div class="sheet-field">
+      <label>Email</label>
+      <input type="email" id="forgot-email" placeholder="nome@email.com" />
+    </div>
+    <button class="sheet-cta" onclick="sendReset()">Invia link di recupero</button>
+    <button class="sheet-cancel" onclick="closeForgot()">Annulla</button>
+  </div>
+</div>
+
+<script>
+/* ── STATE ── */
+let rememberChecked = false;
+let pwVisible = false;
+
+/* ── ICON FOCUS ── */
+function focusIcon(iconId) {
+  document.getElementById(iconId).style.color = 'var(--accent)';
+}
+function blurIcon(iconId, inputId) {
+  const val = document.getElementById(inputId).value;
+  if (!val) document.getElementById(iconId).style.color = 'var(--text3)';
+}
+
+/* ── EYE TOGGLE ── */
+function toggleEye() {
+  pwVisible = !pwVisible;
+  const inp = document.getElementById('input-password');
+  const ico = document.getElementById('eye-icon');
+  inp.type = pwVisible ? 'text' : 'password';
+  ico.className = pwVisible ? 'ti ti-eye-off' : 'ti ti-eye';
+}
+
+/* ── REMEMBER ── */
+function toggleRemember() {
+  rememberChecked = !rememberChecked;
+  document.getElementById('remember-check').classList.toggle('checked', rememberChecked);
+}
+
+/* ── CLEAR ERROR ── */
+function clearError() {
+  document.getElementById('error-banner').classList.remove('show');
+  document.getElementById('field-email').classList.remove('has-error');
+  document.getElementById('field-password').classList.remove('has-error');
+}
+
+/* ── VALIDATE ── */
+function validate() {
+  const email = document.getElementById('input-email').value.trim();
+  const pw = document.getElementById('input-password').value;
+  let ok = true;
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('field-email').classList.add('has-error');
+    ok = false;
+  }
+  if (pw.length < 1) {
+    document.getElementById('field-password').classList.add('has-error');
+    ok = false;
+  }
+  return ok;
+}
+
+/* ── SESSION ── */
+function saveSession(email, nome, cognome) {
+  const user = { email, nome: nome || email.split('@')[0], cognome: cognome || '', loggedIn: true, ts: Date.now() };
+  try { localStorage.setItem('cp_user', JSON.stringify(user)); } catch(e) {}
+  sessionStorage.setItem('cp_user', JSON.stringify(user));
+}
+
+/* ── LOGIN ── */
+function doLogin() {
+  if (!validate()) return;
+  const btn = document.getElementById('login-btn');
+  btn.classList.add('loading');
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    const email = document.getElementById('input-email').value.trim();
+    const pw    = document.getElementById('input-password').value;
+    // Demo: qualsiasi email + password "citypass" oppure qualsiasi password accetta
+    if (pw.length >= 1) {
+      saveSession(email, '', '');
+      document.getElementById('login-view').style.display = 'none';
+      document.getElementById('success-view').classList.add('show');
+      setTimeout(() => { window.location.href = 'citypass.html'; }, 1200);
+    } else {
+      document.getElementById('error-banner').classList.add('show');
+      document.getElementById('field-email').classList.add('has-error');
+      document.getElementById('field-password').classList.add('has-error');
+    }
+  }, 1200);
+}
+
+/* ── SOCIAL LOGIN ── */
+function socialLogin(provider) {
+  const btn = event.currentTarget;
+  const orig = btn.innerHTML;
+  btn.innerHTML = `<div style="width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite"></div> Connessione…`;
+  btn.disabled = true;
+  setTimeout(() => {
+    saveSession('utente@' + provider.toLowerCase() + '.com', 'Utente', provider);
+    btn.innerHTML = orig; btn.disabled = false;
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('success-view').classList.add('show');
+    setTimeout(() => { window.location.href = 'citypass.html'; }, 1200);
+  }, 1400);
+}
+
+/* ── FORGOT ── */
+function openForgot() {
+  const email = document.getElementById('input-email').value.trim();
+  if (email) document.getElementById('forgot-email').value = email;
+  document.getElementById('forgot-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeForgot() {
+  document.getElementById('forgot-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeForgotOutside(e) {
+  if (e.target === e.currentTarget) closeForgot();
+}
+function sendReset() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) return;
+  closeForgot();
+  setTimeout(() => {
+    alert(`Link di recupero inviato a ${email}.\nControlla la tua casella di posta.`);
+  }, 200);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>CityPass — Registrati</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
+
+<style>
+:root {
+  --bg: #F5F2ED;
+  --surface: #FDFCFA;
+  --surface2: #EFEBE4;
+  --accent: #2B5F3E;
+  --accent2: #E8A045;
+  --text: #1A1A18;
+  --text2: #6B6860;
+  --text3: #9E9B94;
+  --border: rgba(26,26,24,0.10);
+  --border2: rgba(26,26,24,0.18);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 2px 16px rgba(26,26,24,0.08);
+  --shadow-lg: 0 8px 40px rgba(26,26,24,0.13);
+  --font: 'DM Sans', sans-serif;
+  --font-display: 'DM Serif Display', serif;
+  --error: #C0392B;
+  --error-bg: #FDF0EE;
+  --driver: #2B5F3E;
+  --passenger: #1A4A82;
+  --both: #7B3FA0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 20;
+}
+.logo { font-family: var(--font-display); font-size: 22px; color: var(--accent); cursor: pointer; text-decoration: none; }
+.topbar-link { font-size: 13px; font-weight: 500; color: var(--text3); text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+.topbar-link:hover { color: var(--text2); }
+
+/* ── PROGRESS BAR ── */
+.progress-wrap {
+  padding: 14px 20px 10px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.progress-steps { display: flex; align-items: center; gap: 0; margin-bottom: 10px; }
+.pstep {
+  display: flex; flex-direction: column; align-items: center; flex: 1;
+  position: relative;
+}
+.pstep:not(:last-child)::after {
+  content: ''; position: absolute;
+  top: 13px; left: calc(50% + 14px);
+  width: calc(100% - 28px); height: 2px;
+  background: var(--border2); border-radius: 2px;
+  transition: background 0.3s;
+}
+.pstep.done:not(:last-child)::after { background: var(--accent); }
+.pstep-circle {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600;
+  background: var(--surface2); color: var(--text3); border: 2px solid var(--border2);
+  transition: all 0.25s; z-index: 1;
+}
+.pstep.active .pstep-circle { background: var(--accent); color: #fff; border-color: var(--accent); }
+.pstep.done .pstep-circle { background: var(--accent); color: #fff; border-color: var(--accent); font-size: 14px; }
+.pstep-label { font-size: 10px; font-weight: 500; color: var(--text3); margin-top: 5px; white-space: nowrap; }
+.pstep.active .pstep-label { color: var(--accent); font-weight: 600; }
+.pstep.done .pstep-label { color: var(--accent); }
+
+/* ── STEP CONTAINER ── */
+.step { display: none; animation: fadeUp 0.22s ease; }
+.step.active { display: block; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── HERO STRIP ── */
+.hero-strip {
+  background: var(--accent); padding: 26px 24px 24px;
+  position: relative; overflow: hidden;
+}
+.hero-strip.passenger { background: var(--passenger); }
+.hero-strip.both { background: var(--both); }
+.hero-strip::before {
+  content: ''; position: absolute; top: -50px; right: -50px;
+  width: 200px; height: 200px; background: rgba(255,255,255,0.05); border-radius: 50%;
+}
+.hero-eyebrow { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 6px; position: relative; z-index: 1; }
+.hero-title { font-family: var(--font-display); font-size: 30px; color: #fff; line-height: 1.1; position: relative; z-index: 1; }
+.hero-sub { font-size: 13px; color: rgba(255,255,255,0.62); margin-top: 5px; position: relative; z-index: 1; }
+
+/* ── SECTION ── */
+.section { padding: 20px 20px 0; }
+.section-title {
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── ROLE CARDS ── */
+.role-grid { display: flex; flex-direction: column; gap: 12px; padding: 20px; }
+.role-card {
+  border: 2px solid var(--border2);
+  border-radius: var(--radius); padding: 20px;
+  cursor: pointer; transition: all 0.2s; background: var(--surface);
+  position: relative; overflow: hidden;
+  display: flex; align-items: flex-start; gap: 16px;
+}
+.role-card:hover { box-shadow: var(--shadow); }
+.role-card.selected-driver { border-color: var(--driver); background: #F0F7F3; }
+.role-card.selected-passenger { border-color: var(--passenger); background: #EEF3FA; }
+.role-card.selected-both { border-color: var(--both); background: #F6F0FA; }
+
+.role-icon-wrap {
+  width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 26px;
+  background: var(--surface2);
+  transition: background 0.2s;
+}
+.role-card.selected-driver .role-icon-wrap { background: #D4EAD9; color: var(--driver); }
+.role-card.selected-passenger .role-icon-wrap { background: #D4E4F5; color: var(--passenger); }
+.role-card.selected-both .role-icon-wrap { background: #E8D8F5; color: var(--both); }
+
+.role-body { flex: 1; }
+.role-name { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.role-desc { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 10px; }
+.role-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.role-pill {
+  font-size: 11px; font-weight: 500; padding: 3px 10px;
+  border-radius: 20px; background: var(--surface2); color: var(--text3);
+}
+.role-card.selected-driver .role-pill { background: #C4DFCA; color: #1A4A28; }
+.role-card.selected-passenger .role-pill { background: #C4D8EE; color: #12345A; }
+.role-card.selected-both .role-pill { background: #DCC8F0; color: #501A78; }
+
+.role-check {
+  position: absolute; top: 14px; right: 14px;
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid var(--border2); background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.role-check i { font-size: 12px; color: #fff; display: none; }
+.role-card.selected-driver .role-check { background: var(--driver); border-color: var(--driver); }
+.role-card.selected-passenger .role-check { background: var(--passenger); border-color: var(--passenger); }
+.role-card.selected-both .role-check { background: var(--both); border-color: var(--both); }
+.role-card[class*="selected-"] .role-check i { display: block; }
+
+/* ── FORM FIELDS ── */
+.form-body { padding: 0 20px 8px; }
+.field { margin-bottom: 16px; }
+.field-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.field-lbl { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+.field-hint { font-size: 11px; color: var(--text3); }
+.input-wrap { position: relative; }
+.input-wrap .fi {
+  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+  font-size: 18px; color: var(--text3); pointer-events: none; transition: color 0.15s;
+}
+.input-wrap input, .input-wrap select {
+  width: 100%; padding: 12px 44px 12px 40px;
+  background: var(--bg); border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); font-family: var(--font);
+  font-size: 15px; color: var(--text); outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  -webkit-appearance: none; appearance: none;
+}
+.input-wrap select { padding-right: 36px; background-image: none; }
+.input-wrap input::placeholder { color: var(--text3); }
+.input-wrap input:focus, .input-wrap select:focus {
+  border-color: var(--accent); background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(43,95,62,0.11);
+}
+.input-wrap input:focus ~ .fi, .input-wrap select:focus ~ .fi { color: var(--accent); }
+.eye-btn {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; color: var(--text3);
+  font-size: 18px; padding: 4px; display: flex;
+}
+.eye-btn:hover { color: var(--text2); }
+.input-error { display: none; font-size: 12px; color: var(--error); margin-top: 5px; align-items: center; gap: 4px; }
+.input-error i { font-size: 13px; }
+.field.has-error .input-wrap input { border-color: var(--error); box-shadow: 0 0 0 3px rgba(192,57,43,0.10); }
+.field.has-error .input-error { display: flex; }
+.form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ── PASSWORD STRENGTH ── */
+.pw-strength { margin-top: 8px; }
+.pw-bars { display: flex; gap: 4px; margin-bottom: 4px; }
+.pw-bar { flex: 1; height: 3px; border-radius: 2px; background: var(--border2); transition: background 0.3s; }
+.pw-bar.weak { background: #E24B4A; }
+.pw-bar.fair { background: var(--accent2); }
+.pw-bar.good { background: #1D9E75; }
+.pw-bar.strong { background: var(--accent); }
+.pw-label { font-size: 11px; color: var(--text3); }
+
+/* ── VEHICLE SECTION (driver only) ── */
+.vehicle-section { padding: 0 20px 8px; }
+
+/* ── TERMS ── */
+.terms-row { padding: 0 20px 20px; display: flex; align-items: flex-start; gap: 10px; }
+.custom-check {
+  width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0; margin-top: 1px;
+  border: 1.5px solid var(--border2); background: var(--bg);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: all 0.15s;
+}
+.custom-check.checked { background: var(--accent); border-color: var(--accent); }
+.custom-check i { font-size: 11px; color: #fff; display: none; }
+.custom-check.checked i { display: block; }
+.terms-text { font-size: 13px; color: var(--text2); line-height: 1.5; cursor: pointer; }
+.terms-text a { color: var(--accent); font-weight: 500; text-decoration: none; }
+
+/* ── SOCIAL ── */
+.social-section { padding: 20px 20px 0; }
+.social-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 12px 16px; margin-bottom: 10px;
+  border-radius: var(--radius-sm); border: 1px solid var(--border2);
+  background: var(--surface); font-family: var(--font);
+  font-size: 14px; font-weight: 500; color: var(--text);
+  cursor: pointer; transition: background 0.15s;
+}
+.social-btn:hover { background: var(--surface2); }
+.social-icon { width: 20px; height: 20px; flex-shrink: 0; }
+.divider { display: flex; align-items: center; gap: 12px; padding: 16px 20px; }
+.divider-line { flex: 1; height: 1px; background: var(--border); }
+.divider-text { font-size: 12px; color: var(--text3); font-weight: 500; white-space: nowrap; }
+
+/* ── BUTTONS ── */
+.btn-area { padding: 8px 20px 20px; }
+.btn-primary {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px;
+  background: var(--accent); color: #fff; border: none;
+  border-radius: var(--radius); font-family: var(--font);
+  font-size: 16px; font-weight: 600; cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s; position: relative; overflow: hidden;
+}
+.btn-primary:hover { opacity: 0.88; }
+.btn-primary:active { transform: scale(0.99); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-primary.loading { pointer-events: none; }
+.btn-primary.loading .btn-text { opacity: 0; }
+.btn-spinner { display: none; position: absolute; width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+.btn-primary.loading .btn-spinner { display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.btn-ghost {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; padding: 13px;
+  background: transparent; color: var(--text3);
+  border: 1px solid var(--border2); border-radius: var(--radius);
+  font-family: var(--font); font-size: 14px; cursor: pointer;
+  transition: background 0.15s; margin-top: 10px;
+}
+.btn-ghost:hover { background: var(--surface2); color: var(--text2); }
+
+.login-nudge { text-align: center; padding: 4px 20px 24px; font-size: 14px; color: var(--text3); }
+.login-nudge a { color: var(--accent); font-weight: 600; text-decoration: none; }
+
+/* ── SUCCESS ── */
+.success-screen {
+  display: none; flex-direction: column; align-items: center;
+  padding: 40px 24px 32px; text-align: center;
+}
+.success-screen.show { display: flex; }
+.success-badge {
+  width: 86px; height: 86px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px; font-size: 38px;
+}
+.badge-driver { background: #D4EAD9; color: var(--driver); }
+.badge-passenger { background: #D4E4F5; color: var(--passenger); }
+.badge-both { background: #E8D8F5; color: var(--both); }
+.success-title { font-family: var(--font-display); font-size: 32px; margin-bottom: 8px; }
+.success-sub { font-size: 14px; color: var(--text2); line-height: 1.6; max-width: 280px; margin-bottom: 8px; }
+.role-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  margin-bottom: 28px;
+}
+.rb-driver { background: #D4EAD9; color: var(--driver); }
+.rb-passenger { background: #D4E4F5; color: var(--passenger); }
+.rb-both { background: #E8D8F5; color: var(--both); }
+.success-actions { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.btn-cta {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px; border-radius: var(--radius);
+  font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; border: none;
+  text-decoration: none; transition: opacity 0.15s;
+}
+.btn-cta-primary { background: var(--accent); color: #fff; }
+.btn-cta-primary:hover { opacity: 0.88; }
+.btn-cta-outline { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+.btn-cta-outline:hover { background: rgba(43,95,62,0.05); }
+
+/* ── SPACER ── */
+.spacer { height: 16px; }
+.spacer-sm { height: 10px; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="logo" href="citypass.html">CityPass</a>
+  <a class="topbar-link" href="citypass-accedi.html">
+    <i class="ti ti-login" style="font-size:15px"></i> Hai già un account?
+  </a>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-steps">
+    <div class="pstep active" id="ps-1">
+      <div class="pstep-circle" id="pc-1">1</div>
+      <div class="pstep-label">Ruolo</div>
+    </div>
+    <div class="pstep" id="ps-2">
+      <div class="pstep-circle" id="pc-2">2</div>
+      <div class="pstep-label">Dati</div>
+    </div>
+    <div class="pstep" id="ps-3">
+      <div class="pstep-circle" id="pc-3">3</div>
+      <div class="pstep-label">Account</div>
+    </div>
+    <div class="pstep" id="ps-4">
+      <div class="pstep-circle" id="pc-4">4</div>
+      <div class="pstep-label">Pronto</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     STEP 1 — RUOLO
+══════════════════════════ -->
+<div class="step active" id="step-1">
+  <div class="hero-strip" id="hero-strip">
+    <div class="hero-eyebrow">Passo 1 di 3</div>
+    <div class="hero-title">Chi sei?</div>
+    <div class="hero-sub">Scegli come vuoi usare CityPass</div>
+  </div>
+
+  <div class="role-grid">
+
+    <div class="role-card" id="role-driver" onclick="selectRole('driver')">
+      <div class="role-icon-wrap"><i class="ti ti-steering-wheel"></i></div>
+      <div class="role-body">
+        <div class="role-name">Offro passaggi</div>
+        <div class="role-desc">Ho un'auto e voglio condividere il mio tragitto quotidiano, guadagnando un contributo per le spese.</div>
+        <div class="role-pills">
+          <span class="role-pill">Guadagna carburante</span>
+          <span class="role-pill">Percorsi fissi</span>
+          <span class="role-pill">Scegli i passeggeri</span>
+        </div>
+      </div>
+      <div class="role-check"><i class="ti ti-check"></i></div>
+    </div>
+
+    <div class="role-card" id="role-passenger" onclick="selectRole('passenger')">
+      <div class="role-icon-wrap" style="color:var(--passenger)"><i class="ti ti-armchair"></i></div>
+      <div class="role-body">
+        <div class="role-name">Cerco un passaggio</div>
+        <div class="role-desc">Ho bisogno di spostarmi in città e preferisco condividere un'auto piuttosto che usare i mezzi.</div>
+        <div class="role-pills">
+          <span class="role-pill">Risparmia tempo</span>
+          <span class="role-pill">Paga poco</span>
+          <span class="role-pill">Vai door-to-door</span>
+        </div>
+      </div>
+      <div class="role-check"><i class="ti ti-check"></i></div>
+    </div>
+
+    <div class="role-card" id="role-both" onclick="selectRole('both')">
+      <div class="role-icon-wrap" style="color:var(--both)"><i class="ti ti-arrows-exchange"></i></div>
+      <div class="role-body">
+        <div class="role-name">Entrambi</div>
+        <div class="role-desc">A volte offro il mio passaggio, a volte ne cerco uno. Massima flessibilità in un unico profilo.</div>
+        <div class="role-pills">
+          <span class="role-pill">Flessibile</span>
+          <span class="role-pill">Profilo unico</span>
+          <span class="role-pill">Più opzioni</span>
+        </div>
+      </div>
+      <div class="role-check"><i class="ti ti-check"></i></div>
+    </div>
+
+  </div>
+
+  <div class="btn-area">
+    <button class="btn-primary" id="btn-step1" onclick="goStep(2)" disabled>
+      <div class="btn-spinner"></div>
+      <span class="btn-text">Continua <i class="ti ti-arrow-right" style="font-size:16px"></i></span>
+    </button>
+  </div>
+
+  <div class="login-nudge">Hai già un account? <a href="citypass-accedi.html">Accedi</a></div>
+  <div class="spacer"></div>
+</div>
+
+<!-- ══════════════════════════
+     STEP 2 — DATI PERSONALI
+══════════════════════════ -->
+<div class="step" id="step-2">
+  <div class="hero-strip" id="hero-strip-2">
+    <div class="hero-eyebrow">Passo 2 di 3</div>
+    <div class="hero-title" id="step2-title">I tuoi dati</div>
+    <div class="hero-sub" id="step2-sub">Dicci qualcosa di te</div>
+  </div>
+
+  <div class="section"><div class="section-title"><i class="ti ti-user" style="font-size:14px"></i> Dati personali</div></div>
+  <div class="form-body">
+    <div class="form-row2">
+      <div class="field" id="f-nome">
+        <div class="field-label-row"><span class="field-lbl">Nome</span></div>
+        <div class="input-wrap">
+          <input type="text" id="inp-nome" placeholder="Mario" oninput="clearFieldError('f-nome')" />
+          <i class="fi ti ti-user"></i>
+        </div>
+        <div class="input-error"><i class="ti ti-alert-circle"></i> Campo obbligatorio</div>
+      </div>
+      <div class="field" id="f-cognome">
+        <div class="field-label-row"><span class="field-lbl">Cognome</span></div>
+        <div class="input-wrap">
+          <input type="text" id="inp-cognome" placeholder="Rossi" oninput="clearFieldError('f-cognome')" />
+          <i class="fi ti ti-user"></i>
+        </div>
+        <div class="input-error"><i class="ti ti-alert-circle"></i> Campo obbligatorio</div>
+      </div>
+    </div>
+
+    <div class="field" id="f-telefono">
+      <div class="field-label-row"><span class="field-lbl">Numero di telefono</span><span class="field-hint">Per essere contattato</span></div>
+      <div class="input-wrap">
+        <input type="tel" id="inp-tel" placeholder="+39 333 123 4567" oninput="clearFieldError('f-telefono')" />
+        <i class="fi ti ti-phone"></i>
+      </div>
+      <div class="input-error"><i class="ti ti-alert-circle"></i> Inserisci un numero valido</div>
+    </div>
+
+    <div class="field" id="f-citta">
+      <div class="field-label-row"><span class="field-lbl">Città / Quartiere</span></div>
+      <div class="input-wrap">
+        <input type="text" id="inp-citta" placeholder="Es. San Michele, Verona" oninput="clearFieldError('f-citta')" />
+        <i class="fi ti ti-map-pin"></i>
+      </div>
+      <div class="input-error"><i class="ti ti-alert-circle"></i> Campo obbligatorio</div>
+    </div>
+
+    <div class="field" id="f-nascita">
+      <div class="field-label-row"><span class="field-lbl">Data di nascita</span></div>
+      <div class="input-wrap">
+        <input type="date" id="inp-nascita" oninput="clearFieldError('f-nascita')" style="padding-left:40px" />
+        <i class="fi ti ti-calendar"></i>
+      </div>
+      <div class="input-error"><i class="ti ti-alert-circle"></i> Devi avere almeno 18 anni</div>
+    </div>
+  </div>
+
+  <!-- Sezione veicolo — solo driver / both -->
+  <div id="vehicle-section" style="display:none">
+    <div class="section"><div class="section-title"><i class="ti ti-car" style="font-size:14px"></i> Il tuo veicolo</div></div>
+    <div class="form-body">
+      <div class="form-row2">
+        <div class="field">
+          <div class="field-label-row"><span class="field-lbl">Marca</span></div>
+          <div class="input-wrap">
+            <input type="text" id="inp-marca" placeholder="Es. Fiat" />
+            <i class="fi ti ti-car"></i>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label-row"><span class="field-lbl">Modello</span></div>
+          <div class="input-wrap">
+            <input type="text" id="inp-modello" placeholder="Es. Panda" />
+            <i class="fi ti ti-car"></i>
+          </div>
+        </div>
+      </div>
+      <div class="form-row2">
+        <div class="field">
+          <div class="field-label-row"><span class="field-lbl">Anno</span></div>
+          <div class="input-wrap">
+            <input type="number" id="inp-anno" placeholder="2020" min="2000" max="2025" />
+            <i class="fi ti ti-calendar-event"></i>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label-row"><span class="field-lbl">Posti max</span></div>
+          <div class="input-wrap" style="position:relative">
+            <select id="inp-posti" style="padding-left:40px">
+              <option value="">—</option>
+              <option>1</option>
+              <option selected>2</option>
+              <option>3</option>
+              <option>4</option>
+            </select>
+            <i class="fi ti ti-users"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-area">
+    <button class="btn-primary" onclick="goStep(3)">
+      <span class="btn-text">Continua <i class="ti ti-arrow-right" style="font-size:16px"></i></span>
+    </button>
+    <button class="btn-ghost" onclick="goStep(1)"><i class="ti ti-arrow-left" style="font-size:16px"></i> Indietro</button>
+  </div>
+  <div class="spacer"></div>
+</div>
+
+<!-- ══════════════════════════
+     STEP 3 — ACCOUNT
+══════════════════════════ -->
+<div class="step" id="step-3">
+  <div class="hero-strip" id="hero-strip-3">
+    <div class="hero-eyebrow">Passo 3 di 3</div>
+    <div class="hero-title">Crea il tuo account</div>
+    <div class="hero-sub">Email e password per accedere</div>
+  </div>
+
+  <div class="social-section">
+    <button class="social-btn" onclick="socialRegister('Google')">
+      <svg class="social-icon" viewBox="0 0 24 24" fill="none">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.61z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Registrati con Google
+    </button>
+    <button class="social-btn" onclick="socialRegister('Apple')">
+      <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4zm-3.1-17.5c.06 2.16-1.63 3.88-3.62 3.73-.28-1.96 1.49-3.88 3.62-3.73z"/>
+      </svg>
+      Registrati con Apple
+    </button>
+  </div>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-text">oppure con email</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="form-body">
+    <div class="field" id="f-email">
+      <div class="field-label-row"><span class="field-lbl">Email</span></div>
+      <div class="input-wrap">
+        <input type="email" id="inp-email" placeholder="nome@email.com" oninput="clearFieldError('f-email')" />
+        <i class="fi ti ti-mail"></i>
+      </div>
+      <div class="input-error"><i class="ti ti-alert-circle"></i> Inserisci un'email valida</div>
+    </div>
+
+    <div class="field" id="f-pw">
+      <div class="field-label-row"><span class="field-lbl">Password</span></div>
+      <div class="input-wrap">
+        <input type="password" id="inp-pw" placeholder="min. 8 caratteri" oninput="checkStrength(); clearFieldError('f-pw')" />
+        <i class="fi ti ti-lock"></i>
+        <button class="eye-btn" onclick="toggleEye('inp-pw','eye-icon1')"><i class="ti ti-eye" id="eye-icon1"></i></button>
+      </div>
+      <div class="pw-strength" id="pw-strength" style="display:none">
+        <div class="pw-bars">
+          <div class="pw-bar" id="bar1"></div>
+          <div class="pw-bar" id="bar2"></div>
+          <div class="pw-bar" id="bar3"></div>
+          <div class="pw-bar" id="bar4"></div>
+        </div>
+        <div class="pw-label" id="pw-label">Troppo corta</div>
+      </div>
+      <div class="input-error"><i class="ti ti-alert-circle"></i> Almeno 8 caratteri</div>
+    </div>
+
+    <div class="field" id="f-pw2">
+      <div class="field-label-row"><span class="field-lbl">Conferma password</span></div>
+      <div class="input-wrap">
+        <input type="password" id="inp-pw2" placeholder="Ripeti la password" oninput="clearFieldError('f-pw2')" />
+        <i class="fi ti ti-lock-check"></i>
+        <button class="eye-btn" onclick="toggleEye('inp-pw2','eye-icon2')"><i class="ti ti-eye" id="eye-icon2"></i></button>
+      </div>
+      <div class="input-error"><i class="ti ti-alert-circle"></i> Le password non corrispondono</div>
+    </div>
+  </div>
+
+  <div class="terms-row" onclick="toggleTerms()">
+    <div class="custom-check" id="terms-check"><i class="ti ti-check"></i></div>
+    <div class="terms-text">Accetto i <a href="#" onclick="return false">Termini di servizio</a> e la <a href="#" onclick="return false">Privacy policy</a> di CityPass</div>
+  </div>
+
+  <div class="btn-area">
+    <button class="btn-primary" id="btn-register" onclick="doRegister()">
+      <div class="btn-spinner"></div>
+      <span class="btn-text">Crea account</span>
+    </button>
+    <button class="btn-ghost" onclick="goStep(2)"><i class="ti ti-arrow-left" style="font-size:16px"></i> Indietro</button>
+  </div>
+
+  <div class="login-nudge">Hai già un account? <a href="citypass-accedi.html">Accedi</a></div>
+  <div class="spacer"></div>
+</div>
+
+<!-- ══════════════════════════
+     STEP 4 — SUCCESSO
+══════════════════════════ -->
+<div class="step" id="step-4">
+  <div class="success-screen show" id="success-view">
+    <div class="success-badge" id="success-badge"><i class="ti ti-check"></i></div>
+    <div class="success-title" id="success-title">Benvenuto!</div>
+    <div class="success-sub" id="success-sub">Il tuo account è stato creato con successo.</div>
+    <div class="role-badge" id="role-badge-display"></div>
+    <div class="success-actions">
+      <a class="btn-cta btn-cta-primary" href="citypass.html" id="success-cta-main">
+        <i class="ti ti-home"></i> Vai alla home
+      </a>
+      <a class="btn-cta btn-cta-outline" href="citypass.html" id="success-cta-secondary">
+        <i class="ti ti-car"></i> Pubblica il tuo primo passaggio
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── STATE ── */
+let selectedRole = null;
+let termsAccepted = false;
+let currentStep = 1;
+
+/* ── ROLE SELECTION ── */
+const roleClasses = { driver: 'selected-driver', passenger: 'selected-passenger', both: 'selected-both' };
+const roleColors  = { driver: '#2B5F3E', passenger: '#1A4A82', both: '#7B3FA0' };
+
+function selectRole(role) {
+  selectedRole = role;
+  ['driver','passenger','both'].forEach(r => {
+    document.getElementById('role-' + r).className = 'role-card' + (r === role ? ' selected-' + r : '');
+  });
+  document.getElementById('btn-step1').disabled = false;
+
+  // Update hero color
+  const strip = document.getElementById('hero-strip');
+  strip.className = 'hero-strip' + (role !== 'driver' ? ' ' + role : '');
+}
+
+/* ── STEPS ── */
+function goStep(n) {
+  if (n === 3 && !validateStep2()) return;
+  if (n > currentStep) {
+    document.getElementById('ps-' + currentStep).classList.remove('active');
+    document.getElementById('ps-' + currentStep).classList.add('done');
+    document.getElementById('pc-' + currentStep).innerHTML = '<i class="ti ti-check" style="font-size:13px"></i>';
+  }
+  document.getElementById('step-' + currentStep).classList.remove('active');
+  currentStep = n;
+  document.getElementById('step-' + n).classList.add('active');
+  document.getElementById('ps-' + n).classList.add('active');
+  window.scrollTo(0, 0);
+
+  // Adapt step 2 based on role
+  if (n === 2) applyRoleToStep2();
+}
+
+function applyRoleToStep2() {
+  const strip2 = document.getElementById('hero-strip-2');
+  const strip3 = document.getElementById('hero-strip-3');
+  const veh = document.getElementById('vehicle-section');
+
+  strip2.className = 'hero-strip' + (selectedRole !== 'driver' ? ' ' + selectedRole : '');
+  if (strip3) strip3.className = 'hero-strip' + (selectedRole !== 'driver' ? ' ' + selectedRole : '');
+
+  const subtitles = {
+    driver: 'Raccontaci di te e del tuo veicolo',
+    passenger: 'Raccontaci dove sei e come contattarti',
+    both: 'Dati personali e veicolo'
+  };
+  document.getElementById('step2-sub').textContent = subtitles[selectedRole];
+  veh.style.display = (selectedRole === 'driver' || selectedRole === 'both') ? 'block' : 'none';
+}
+
+/* ── VALIDATE STEP 2 ── */
+function validateStep2() {
+  let ok = true;
+  const checks = [
+    ['f-nome', 'inp-nome', v => v.trim().length > 0],
+    ['f-cognome', 'inp-cognome', v => v.trim().length > 0],
+    ['f-citta', 'inp-citta', v => v.trim().length > 0],
+  ];
+  checks.forEach(([fid, iid, fn]) => {
+    const val = document.getElementById(iid).value;
+    if (!fn(val)) { document.getElementById(fid).classList.add('has-error'); ok = false; }
+  });
+  // Age check
+  const dob = document.getElementById('inp-nascita').value;
+  if (dob) {
+    const age = (Date.now() - new Date(dob)) / (365.25 * 24 * 3600 * 1000);
+    if (age < 18) { document.getElementById('f-nascita').classList.add('has-error'); ok = false; }
+  }
+  return ok;
+}
+
+function clearFieldError(fid) {
+  document.getElementById(fid).classList.remove('has-error');
+}
+
+/* ── PASSWORD STRENGTH ── */
+function checkStrength() {
+  const pw = document.getElementById('inp-pw').value;
+  document.getElementById('pw-strength').style.display = pw.length ? 'block' : 'none';
+  const bars = ['bar1','bar2','bar3','bar4'];
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const labels = ['Troppo corta','Debole','Discreta','Buona','Ottima'];
+  const cls    = ['','weak','fair','good','strong'];
+  bars.forEach((b, i) => {
+    document.getElementById(b).className = 'pw-bar' + (i < score ? ' ' + cls[score] : '');
+  });
+  document.getElementById('pw-label').textContent = labels[score];
+  document.getElementById('pw-label').style.color =
+    score <= 1 ? '#E24B4A' : score === 2 ? '#E8A045' : score === 3 ? '#1D9E75' : '#2B5F3E';
+}
+
+/* ── EYE TOGGLE ── */
+function toggleEye(inputId, iconId) {
+  const inp = document.getElementById(inputId);
+  const ico = document.getElementById(iconId);
+  const vis = inp.type === 'text';
+  inp.type = vis ? 'password' : 'text';
+  ico.className = vis ? 'ti ti-eye' : 'ti ti-eye-off';
+}
+
+/* ── TERMS ── */
+function toggleTerms() {
+  termsAccepted = !termsAccepted;
+  document.getElementById('terms-check').classList.toggle('checked', termsAccepted);
+}
+
+/* ── SESSION ── */
+function saveSession(email, nome, cognome, role) {
+  const user = { email, nome, cognome, role, loggedIn: true, ts: Date.now() };
+  try { localStorage.setItem('cp_user', JSON.stringify(user)); } catch(e) {}
+  sessionStorage.setItem('cp_user', JSON.stringify(user));
+}
+
+/* ── REGISTER ── */
+function doRegister() {
+  let ok = true;
+  const email = document.getElementById('inp-email').value.trim();
+  const pw    = document.getElementById('inp-pw').value;
+  const pw2   = document.getElementById('inp-pw2').value;
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('f-email').classList.add('has-error'); ok = false;
+  }
+  if (pw.length < 8) {
+    document.getElementById('f-pw').classList.add('has-error'); ok = false;
+  }
+  if (pw !== pw2) {
+    document.getElementById('f-pw2').classList.add('has-error'); ok = false;
+  }
+  if (!termsAccepted) {
+    document.getElementById('terms-check').style.borderColor = '#C0392B'; ok = false;
+    setTimeout(() => document.getElementById('terms-check').style.borderColor = '', 1800);
+  }
+  if (!ok) return;
+
+  const btn = document.getElementById('btn-register');
+  btn.classList.add('loading');
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    const nome    = document.getElementById('inp-nome').value.trim();
+    const cognome = document.getElementById('inp-cognome').value.trim();
+    saveSession(email, nome, cognome, selectedRole);
+    showSuccess();
+  }, 1600);
+}
+
+/* ── SOCIAL REGISTER ── */
+function socialRegister(provider) {
+  const btn = event.currentTarget;
+  const orig = btn.innerHTML;
+  btn.innerHTML = `<div style="width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite"></div> Connessione…`;
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = orig; btn.disabled = false;
+    const nome = document.getElementById('inp-nome').value.trim() || provider + 'User';
+    saveSession('utente@' + provider.toLowerCase() + '.com', nome, '', selectedRole);
+    showSuccess();
+  }, 1600);
+}
+
+/* ── SUCCESS ── */
+function showSuccess() {
+  document.getElementById('ps-3').classList.remove('active');
+  document.getElementById('ps-3').classList.add('done');
+  document.getElementById('pc-3').innerHTML = '<i class="ti ti-check" style="font-size:13px"></i>';
+  document.getElementById('step-3').classList.remove('active');
+  document.getElementById('step-4').classList.add('active');
+  document.getElementById('ps-4').classList.add('active');
+  window.scrollTo(0,0);
+
+  const nome = document.getElementById('inp-nome').value || 'benvenuto';
+  const configs = {
+    driver:    { badge:'badge-driver',    rb:'rb-driver',    icon:'ti-steering-wheel', label:'Conducente',            sub:'Sei pronto a pubblicare il tuo primo passaggio e guadagnare sulle spese.', cta2icon:'ti-car',    cta2:'Pubblica il tuo primo passaggio' },
+    passenger: { badge:'badge-passenger', rb:'rb-passenger', icon:'ti-armchair',        label:'Passeggero',            sub:'Cerca subito un passaggio nella tua zona e inizia a spostarti.',           cta2icon:'ti-search', cta2:'Cerca un passaggio' },
+    both:      { badge:'badge-both',      rb:'rb-both',      icon:'ti-arrows-exchange', label:'Conducente & Passeggero', sub:'Hai il massimo della flessibilità: offri o cerca passaggi quando vuoi.',  cta2icon:'ti-car',    cta2:'Pubblica il tuo primo passaggio' },
+  };
+  const c = configs[selectedRole] || configs.both;
+
+  document.getElementById('success-badge').className = 'success-badge ' + c.badge;
+  document.getElementById('success-badge').innerHTML = `<i class="ti ${c.icon}"></i>`;
+  document.getElementById('success-title').textContent = `Benvenuto, ${nome}!`;
+  document.getElementById('success-sub').textContent = c.sub;
+  document.getElementById('role-badge-display').className = 'role-badge ' + c.rb;
+  document.getElementById('role-badge-display').innerHTML = `<i class="ti ${c.icon}" style="font-size:14px"></i> ${c.label}`;
+  document.getElementById('success-cta-secondary').innerHTML = `<i class="ti ${c.cta2icon}"></i> ${c.cta2}`;
+
+  // Redirect dopo 2.5s
+  setTimeout(() => { window.location.href = 'citypass.html'; }, 2500);
+}
+</script>
+</body>
+</html>
