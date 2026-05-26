@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>CityPass — Pagamento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"/>
+<style>
+:root{
+  --bg:#F5F2ED; --surface:#FDFCFA; --surface2:#EFEBE4;
+  --accent:#2B5F3E; --accent2:#E8A045;
+  --text:#1A1A18; --text2:#6B6860; --text3:#9E9B94;
+  --border:rgba(26,26,24,.10); --border2:rgba(26,26,24,.18);
+  --radius:16px; --radius-sm:10px;
+  --shadow:0 2px 16px rgba(26,26,24,.08); --shadow-lg:0 8px 40px rgba(26,26,24,.14);
+  --font:'DM Sans',sans-serif; --font-display:'DM Serif Display',serif;
+  --stripe:#635BFF; --error:#C0392B; --error-bg:#FDF0EE;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;gap:10px;padding:13px 16px 11px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:30}
+.back-btn{width:36px;height:36px;border-radius:50%;background:var(--bg);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);font-size:18px;text-decoration:none;flex-shrink:0;transition:background .15s}
+.back-btn:hover{background:var(--surface2)}
+.topbar-title{font-size:17px;font-weight:600;flex:1}
+.secure-badge{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text3);flex-shrink:0}
+.secure-badge i{font-size:15px;color:var(--accent)}
+
+/* SCREEN */
+.screen{display:none;animation:fadeUp .2s ease}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── TRIP SUMMARY ── */
+.trip-summary{margin:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.ts-header{background:var(--accent);padding:14px 16px;display:flex;align-items:center;gap:12px}
+.ts-avatar{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
+.ts-info{flex:1}
+.ts-name{font-size:15px;font-weight:600;color:#fff}
+.ts-car{font-size:12px;color:rgba(255,255,255,.6)}
+.ts-stars{font-size:12px;color:var(--accent2)}
+.ts-body{padding:14px 16px}
+.ts-route{display:flex;flex-direction:column;gap:0;margin-bottom:14px}
+.ts-stop{display:flex;align-items:center;gap:10px;padding:5px 0}
+.ts-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.ts-place{font-size:13px;font-weight:500;color:var(--text)}
+.ts-place.sub{color:var(--text2);font-size:12px;font-weight:400}
+.ts-connector{display:flex;gap:10px;align-items:stretch;padding:1px 0}
+.ts-line{width:10px;display:flex;justify-content:center}
+.ts-line-inner{width:1.5px;height:14px;background:var(--border2)}
+.ts-chips{display:flex;gap:7px;flex-wrap:wrap}
+.ts-chip{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;padding:4px 10px;border-radius:20px;background:var(--surface2);color:var(--text2)}
+
+/* ── PRICE BREAKDOWN ── */
+.breakdown{margin:0 16px 4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.bd-title{padding:13px 16px 0;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
+.bd-row{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-bottom:1px solid var(--border);font-size:14px}
+.bd-row:last-child{border-bottom:none}
+.bd-label{color:var(--text2);display:flex;align-items:center;gap:6px}
+.bd-val{font-weight:500;color:var(--text)}
+.bd-val.green{color:var(--accent)}
+.bd-val.muted{color:var(--text3)}
+.bd-info{width:18px;height:18px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:var(--text3);cursor:pointer;flex-shrink:0}
+.bd-total{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:var(--surface2);border-radius:0 0 var(--radius) var(--radius)}
+.bd-total-label{font-size:15px;font-weight:600;color:var(--text)}
+.bd-total-val{font-family:var(--font-display);font-size:28px;color:var(--accent)}
+
+/* COMMISSION TOOLTIP */
+.tooltip-box{display:none;margin:0 16px 8px;background:#FEF8EF;border:1px solid #FADFA4;border-radius:var(--radius-sm);padding:12px 14px;font-size:12px;color:#6B4F00;line-height:1.6}
+.tooltip-box.show{display:block}
+
+/* SECTION LABEL */
+.section-label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;padding:16px 16px 10px}
+
+/* ── PAYMENT METHODS ── */
+.methods{padding:0 16px;display:flex;flex-direction:column;gap:10px}
+.method-card{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .18s;position:relative}
+.method-card:hover{border-color:var(--border2);box-shadow:var(--shadow)}
+.method-card.selected{border-color:var(--accent);background:#F0F7F3}
+.method-card.selected-stripe{border-color:var(--stripe);background:#F3F2FF}
+.method-icon{width:44px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px}
+.mi-card{background:#F0F0F0}
+.mi-apple{background:#000}
+.mi-google{background:#fff;border:1px solid #E0E0E0}
+.mi-satispay{background:#E8002D}
+.method-body{flex:1}
+.method-name{font-size:14px;font-weight:600;color:var(--text)}
+.method-sub{font-size:12px;color:var(--text3)}
+.method-radio{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.method-card.selected .method-radio,
+.method-card.selected-stripe .method-radio{background:var(--accent);border-color:var(--accent)}
+.method-card.selected-stripe .method-radio{background:var(--stripe);border-color:var(--stripe)}
+.method-radio i{font-size:11px;color:#fff;display:none}
+.method-card.selected .method-radio i,
+.method-card.selected-stripe .method-radio i{display:block}
+.method-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:#EAF3DE;color:#1E5E30}
+.method-badge.new{background:#E8D8F5;color:#501A78}
+
+/* ── CARD FORM ── */
+.card-form{margin:12px 16px 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:none}
+.card-form.show{display:block}
+.cf-header{background:#635BFF;padding:10px 16px;display:flex;align-items:center;gap:8px}
+.cf-header-logo{font-size:12px;font-weight:700;color:#fff;letter-spacing:.05em}
+.cf-header-sub{font-size:11px;color:rgba(255,255,255,.6)}
+.cf-header-lock{margin-left:auto;font-size:14px;color:rgba(255,255,255,.7)}
+.cf-body{padding:16px}
+.cf-field{margin-bottom:14px}
+.cf-field:last-child{margin-bottom:0}
+.cf-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block}
+.cf-input-wrap{position:relative}
+.cf-input{width:100%;padding:11px 40px 11px 14px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius-sm);font-family:var(--font);font-size:15px;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s;letter-spacing:.02em}
+.cf-input::placeholder{color:var(--text3);letter-spacing:0}
+.cf-input:focus{border-color:#635BFF;box-shadow:0 0 0 3px rgba(99,91,255,.12)}
+.cf-input.error{border-color:var(--error);box-shadow:0 0 0 3px rgba(192,57,43,.10)}
+.cf-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:17px;color:var(--text3);pointer-events:none}
+.cf-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cf-error{font-size:11px;color:var(--error);margin-top:4px;display:none;align-items:center;gap:3px}
+.cf-field.has-error .cf-error{display:flex}
+.cf-field.has-error .cf-input{border-color:var(--error)}
+
+/* SAVED CARD */
+.saved-cards{margin:12px 16px 0;display:flex;flex-direction:column;gap:8px;display:none}
+.saved-cards.show{display:flex}
+.saved-card{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
+.saved-card:hover{border-color:var(--border2);box-shadow:var(--shadow)}
+.saved-card.selected{border-color:var(--accent);background:#F0F7F3}
+.sc-brand{width:36px;height:24px;border-radius:4px;background:#1A1F71;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sc-brand-visa{font-size:10px;font-weight:800;color:#fff;font-style:italic;letter-spacing:-.5px}
+.sc-brand-mc{display:flex}
+.sc-brand-mc span:first-child{width:16px;height:16px;border-radius:50%;background:#EB001B;opacity:.9}
+.sc-brand-mc span:last-child{width:16px;height:16px;border-radius:50%;background:#F79E1B;margin-left:-6px;opacity:.9}
+.sc-info{flex:1}
+.sc-number{font-size:13px;font-weight:600;color:var(--text);letter-spacing:.05em}
+.sc-exp{font-size:11px;color:var(--text3)}
+.sc-radio{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.saved-card.selected .sc-radio{background:var(--accent);border-color:var(--accent)}
+.saved-card.selected .sc-radio i{color:#fff;font-size:10px}
+.add-card-btn{display:flex;align-items:center;gap:8px;padding:11px 14px;border:1.5px dashed var(--border2);border-radius:var(--radius-sm);font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;transition:all .15s;background:none;width:100%;font-family:var(--font)}
+.add-card-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── CTA ── */
+.cta-section{padding:16px}
+.pay-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:var(--font);font-size:17px;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s;position:relative;overflow:hidden}
+.pay-btn:hover{opacity:.88}
+.pay-btn:active{transform:scale(.99)}
+.pay-btn.loading{pointer-events:none}
+.pay-btn.loading .btn-text{opacity:0}
+.pay-spinner{display:none;position:absolute;width:22px;height:22px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+.pay-btn.loading .pay-spinner{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pay-btn-sub{text-align:center;font-size:12px;color:var(--text3);margin-top:8px;display:flex;align-items:center;justify-content:center;gap:5px}
+.pay-btn-sub i{font-size:13px;color:var(--accent)}
+
+/* STRIPE TRUST ROW */
+.stripe-trust{display:flex;align-items:center;justify-content:center;gap:16px;padding:0 16px 16px}
+.st-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
+.st-item i{font-size:13px;color:var(--accent)}
+
+/* ── PROCESSING SCREEN ── */
+.processing-wrap{display:flex;flex-direction:column;align-items:center;padding:56px 24px 32px;text-align:center}
+.proc-ring{width:80px;height:80px;border-radius:50%;background:var(--surface);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;position:relative}
+.proc-spinner{width:80px;height:80px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--accent);animation:spin .9s linear infinite;position:absolute;top:0;left:0}
+.proc-icon{font-size:30px;color:var(--accent)}
+.proc-title{font-family:var(--font-display);font-size:28px;margin-bottom:8px}
+.proc-sub{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:28px}
+.proc-steps{width:100%;display:flex;flex-direction:column;gap:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.proc-step{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.proc-step:last-child{border-bottom:none}
+.proc-step-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ps-wait{background:var(--surface2);color:var(--text3)}
+.ps-active{background:#FAE8CC;color:#8A4F00;animation:pulse-ps .8s infinite alternate}
+.ps-done{background:#D4EAD9;color:#1E5E30}
+@keyframes pulse-ps{from{transform:scale(1)}to{transform:scale(1.08)}}
+.proc-step-text{font-size:13px;font-weight:500;color:var(--text2)}
+.proc-step.active .proc-step-text{color:var(--text);font-weight:600}
+.proc-step.done .proc-step-text{color:var(--text3)}
+
+/* ── SUCCESS SCREEN ── */
+.success-wrap{display:flex;flex-direction:column;align-items:center;padding:48px 24px 24px;text-align:center}
+.success-ring{width:84px;height:84px;border-radius:50%;background:#D4EAD9;display:flex;align-items:center;justify-content:center;margin-bottom:20px;font-size:36px;color:var(--accent)}
+.success-title{font-family:var(--font-display);font-size:32px;margin-bottom:6px}
+.success-sub{font-size:14px;color:var(--text2);line-height:1.6;max-width:280px;margin-bottom:24px}
+.receipt{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;text-align:left}
+.receipt-header{background:var(--accent);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.receipt-title{font-size:13px;font-weight:600;color:#fff}
+.receipt-id{font-size:11px;color:rgba(255,255,255,.6);font-family:monospace}
+.receipt-row{display:flex;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border);font-size:13px}
+.receipt-row:last-child{border-bottom:none}
+.rl{color:var(--text3)}
+.rv{font-weight:500;color:var(--text)}
+.rv.green{color:var(--accent)}
+.receipt-total{display:flex;justify-content:space-between;padding:14px 16px;background:var(--surface2)}
+.rt-label{font-size:14px;font-weight:600}
+.rt-val{font-family:var(--font-display);font-size:24px;color:var(--accent)}
+.success-actions{width:100%;display:flex;flex-direction:column;gap:10px}
+.sca-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border-radius:var(--radius);font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;border:none;text-decoration:none;transition:opacity .15s}
+.sca-primary{background:var(--accent);color:#fff}
+.sca-primary:hover{opacity:.88}
+.sca-outline{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+.sca-outline:hover{background:rgba(43,95,62,.05)}
+.sca-ghost{background:transparent;color:var(--text3);border:1px solid var(--border2)}
+.sca-ghost:hover{background:var(--surface2)}
+
+/* SPACER */
+.spacer{height:20px}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="back-btn" href="javascript:history.back()"><i class="ti ti-arrow-left"></i></a>
+  <div class="topbar-title" id="topbar-title">Pagamento</div>
+  <div class="secure-badge"><i class="ti ti-lock"></i> Sicuro</div>
+</div>
+
+<!-- ══════════════════════════
+     STEP 1 — CHECKOUT
+══════════════════════════ -->
+<div class="screen active" id="s-checkout">
+
+  <!-- Trip summary -->
+  <div class="trip-summary">
+    <div class="ts-header">
+      <div class="ts-avatar">MR</div>
+      <div class="ts-info">
+        <div class="ts-name">Marco Rossetti</div>
+        <div class="ts-car">Fiat Panda 2020 · ★ <span class="ts-stars">4.8</span> · 23 rec.</div>
+      </div>
+    </div>
+    <div class="ts-body">
+      <div class="ts-route">
+        <div class="ts-stop">
+          <div class="ts-dot" style="background:var(--accent)"></div>
+          <div>
+            <div class="ts-place">San Michele</div>
+            <div class="ts-place sub">Fermata bus — Via Cavour</div>
+          </div>
+        </div>
+        <div class="ts-connector"><div class="ts-line"><div class="ts-line-inner"></div></div></div>
+        <div class="ts-stop">
+          <div class="ts-dot" style="background:var(--accent2)"></div>
+          <div>
+            <div class="ts-place">Centro Verona</div>
+            <div class="ts-place sub">Piazza Bra</div>
+          </div>
+        </div>
+      </div>
+      <div class="ts-chips">
+        <div class="ts-chip"><i class="ti ti-clock" style="font-size:13px"></i> Oggi 09:00</div>
+        <div class="ts-chip"><i class="ti ti-users" style="font-size:13px"></i> 1 posto</div>
+        <div class="ts-chip"><i class="ti ti-route" style="font-size:13px"></i> ~3.2 km</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Price breakdown -->
+  <div class="section-label">Riepilogo costi</div>
+  <div class="breakdown">
+    <div class="bd-row">
+      <span class="bd-label">
+        Contributo al conducente
+        <span class="bd-info" onclick="toggleTooltip('tt-driver')">?</span>
+      </span>
+      <span class="bd-val">€2.50</span>
+    </div>
+    <div class="bd-row">
+      <span class="bd-label">
+        Commissione CityPass (10%)
+        <span class="bd-info" onclick="toggleTooltip('tt-commission')">?</span>
+      </span>
+      <span class="bd-val">€0.25</span>
+    </div>
+    <div class="bd-row">
+      <span class="bd-label">
+        Costi elaborazione Stripe
+        <span class="bd-info" onclick="toggleTooltip('tt-stripe')">?</span>
+      </span>
+      <span class="bd-val">€0.29</span>
+    </div>
+    <div class="bd-row">
+      <span class="bd-label">Protezione pagamento</span>
+      <span class="bd-val green">Inclusa</span>
+    </div>
+    <div class="bd-total">
+      <span class="bd-total-label">Totale</span>
+      <span class="bd-total-val">€3.04</span>
+    </div>
+  </div>
+
+  <!-- Tooltips -->
+  <div class="tooltip-box" id="tt-driver" style="display:none">
+    <strong>💰 Contributo al conducente</strong><br>
+    Questi €2.50 vanno direttamente a Marco R. tramite Stripe Connect. Lui riceve sempre esattamente l'importo che ha impostato — noi non tocchiamo questa quota.
+  </div>
+  <div class="tooltip-box" id="tt-commission" style="display:none">
+    <strong>🏢 Commissione CityPass (10%)</strong><br>
+    €0.25 su €2.50 rimangono a CityPass e coprono: assistenza clienti, rimborsi garantiti, sviluppo e manutenzione della piattaforma. <strong>Tu ricevi €0.25 netti</strong> dopo che Stripe ha prelevato la sua parte.
+  </div>
+  <div class="tooltip-box" id="tt-stripe" style="display:none">
+    <strong>💳 Costi elaborazione Stripe</strong><br>
+    Stripe addebita €0.25 fissi + 1.4% per ogni transazione europea (carte italiane/UE). Questi costi non vanno né a te né al conducente — è il costo del circuito di pagamento sicuro PCI-DSS.
+  </div>
+
+
+
+  <!-- Payment methods -->
+  <div class="section-label">Metodo di pagamento</div>
+
+  <!-- Saved cards -->
+  <div class="saved-cards show" id="saved-cards">
+    <div class="saved-card selected" id="sc-visa" onclick="selectSaved('sc-visa')">
+      <div class="sc-brand"><div class="sc-brand-visa">VISA</div></div>
+      <div class="sc-info">
+        <div class="sc-number">•••• •••• •••• 4521</div>
+        <div class="sc-exp">Scade 08/26</div>
+      </div>
+      <div class="sc-radio"><i class="ti ti-check"></i></div>
+    </div>
+    <div class="saved-card" id="sc-mc" onclick="selectSaved('sc-mc')">
+      <div class="sc-brand"><div class="sc-brand-mc"><span></span><span></span></div></div>
+      <div class="sc-info">
+        <div class="sc-number">•••• •••• •••• 8834</div>
+        <div class="sc-exp">Scade 03/27</div>
+      </div>
+      <div class="sc-radio"><i class="ti ti-check"></i></div>
+    </div>
+    <button class="add-card-btn" onclick="showNewCard()">
+      <i class="ti ti-plus" style="font-size:16px"></i> Aggiungi nuova carta
+    </button>
+  </div>
+
+  <div class="methods" id="methods">
+    <div class="method-card" id="m-card" onclick="selectMethod('m-card')">
+      <div class="method-icon mi-card"><i class="ti ti-credit-card" style="font-size:22px;color:#555"></i></div>
+      <div class="method-body">
+        <div class="method-name">Carta di credito / debito</div>
+        <div class="method-sub">Visa, Mastercard, Amex</div>
+      </div>
+      <div class="method-radio"><i class="ti ti-check"></i></div>
+    </div>
+    <div class="method-card" id="m-apple" onclick="selectMethod('m-apple')">
+      <div class="method-icon mi-apple">
+        <svg width="18" height="22" viewBox="0 0 18 22" fill="white"><path d="M14.05 11.47c-.02-2.33 1.9-3.45 1.99-3.51-1.08-1.58-2.77-1.8-3.38-1.83-1.44-.15-2.82.85-3.55.85-.73 0-1.85-.83-3.04-.81-1.56.02-3 .91-3.8 2.3-1.63 2.82-.42 7 1.17 9.29.78 1.12 1.71 2.38 2.93 2.34 1.18-.05 1.63-.76 3.05-.76 1.43 0 1.83.76 3.07.74 1.27-.02 2.07-1.15 2.84-2.28.9-1.3 1.27-2.57 1.29-2.64-.03-.01-2.56-.98-2.57-3.69zM11.65 4.28c.65-.79 1.09-1.89.97-2.99-.93.04-2.07.62-2.74 1.4-.6.69-1.13 1.8-.99 2.86 1.04.08 2.1-.53 2.76-1.27z"/></svg>
+      </div>
+      <div class="method-body">
+        <div class="method-name">Apple Pay</div>
+        <div class="method-sub">Touch ID o Face ID</div>
+      </div>
+      <span class="method-badge">Veloce</span>
+      <div class="method-radio"><i class="ti ti-check"></i></div>
+    </div>
+    <div class="method-card" id="m-google" onclick="selectMethod('m-google')">
+      <div class="method-icon mi-google">
+        <svg width="20" height="20" viewBox="0 0 20 20"><path d="M19.6 10.23c0-.68-.06-1.36-.17-2H10v3.77h5.4a4.6 4.6 0 01-2 3.02v2.5h3.24c1.9-1.75 2.96-4.33 2.96-7.29z" fill="#4285F4"/><path d="M10 20c2.7 0 4.96-.9 6.62-2.42l-3.24-2.51c-.9.6-2.05.96-3.38.96-2.6 0-4.8-1.75-5.59-4.1H1.07v2.6A10 10 0 0010 20z" fill="#34A853"/><path d="M4.41 11.93A6.01 6.01 0 014.1 10c0-.67.12-1.32.31-1.93V5.47H1.07A10 10 0 000 10c0 1.61.38 3.13 1.07 4.53l3.34-2.6z" fill="#FBBC04"/><path d="M10 3.97c1.46 0 2.77.5 3.8 1.49l2.85-2.85C14.95.99 12.69 0 10 0A10 10 0 001.07 5.47l3.34 2.6C5.2 5.72 7.4 3.97 10 3.97z" fill="#EA4335"/></svg>
+      </div>
+      <div class="method-body">
+        <div class="method-name">Google Pay</div>
+        <div class="method-sub">Pagamento rapido con Google</div>
+      </div>
+      <span class="method-badge">Veloce</span>
+      <div class="method-radio"><i class="ti ti-check"></i></div>
+    </div>
+    <div class="method-card" id="m-satispay" onclick="selectMethod('m-satispay')">
+      <div class="method-icon mi-satispay">
+        <svg width="20" height="20" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#E8002D"/><text x="20" y="26" text-anchor="middle" font-size="16" font-weight="800" fill="white" font-family="Arial">S</text></svg>
+      </div>
+      <div class="method-body">
+        <div class="method-name">Satispay</div>
+        <div class="method-sub">0% commissione sotto €10</div>
+      </div>
+      <span class="method-badge new">IT</span>
+      <div class="method-radio"><i class="ti ti-check"></i></div>
+    </div>
+  </div>
+
+  <!-- New card form (Stripe) -->
+  <div class="card-form" id="card-form">
+    <div class="cf-header">
+      <div>
+        <div class="cf-header-logo">Stripe</div>
+        <div class="cf-header-sub">Pagamento sicuro e cifrato</div>
+      </div>
+      <i class="ti ti-lock cf-header-lock"></i>
+    </div>
+    <div class="cf-body">
+      <div class="cf-field" id="cf-name">
+        <label class="cf-label">Intestatario carta</label>
+        <div class="cf-input-wrap">
+          <input class="cf-input" id="inp-name" type="text" placeholder="Mario Rossi" oninput="clearCfError('cf-name')"/>
+          <i class="ti ti-user cf-icon"></i>
+        </div>
+        <div class="cf-error"><i class="ti ti-alert-circle"></i> Campo obbligatorio</div>
+      </div>
+      <div class="cf-field" id="cf-number">
+        <label class="cf-label">Numero carta</label>
+        <div class="cf-input-wrap">
+          <input class="cf-input" id="inp-number" type="tel" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this); clearCfError('cf-number')"/>
+          <i class="ti ti-credit-card cf-icon" id="card-icon"></i>
+        </div>
+        <div class="cf-error"><i class="ti ti-alert-circle"></i> Numero carta non valido</div>
+      </div>
+      <div class="cf-row2">
+        <div class="cf-field" id="cf-expiry">
+          <label class="cf-label">Scadenza</label>
+          <div class="cf-input-wrap">
+            <input class="cf-input" id="inp-expiry" type="tel" placeholder="MM/AA" maxlength="5" oninput="formatExpiry(this); clearCfError('cf-expiry')"/>
+          </div>
+          <div class="cf-error"><i class="ti ti-alert-circle"></i> Non valida</div>
+        </div>
+        <div class="cf-field" id="cf-cvc">
+          <label class="cf-label">CVC</label>
+          <div class="cf-input-wrap">
+            <input class="cf-input" id="inp-cvc" type="tel" placeholder="123" maxlength="4" oninput="clearCfError('cf-cvc')"/>
+            <i class="ti ti-help cf-icon"></i>
+          </div>
+          <div class="cf-error"><i class="ti ti-alert-circle"></i> Non valido</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:4px;cursor:pointer" onclick="toggleSaveCard()">
+        <div class="sc-radio" id="save-check" style="width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border2);background:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-check" style="font-size:11px;color:#fff;display:none" id="save-icon"></i></div>
+        <span style="font-size:13px;color:var(--text2)">Salva questa carta per i prossimi pagamenti</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <button class="pay-btn" id="pay-btn" onclick="startPayment()">
+      <div class="pay-spinner"></div>
+      <span class="btn-text"><i class="ti ti-lock" style="font-size:16px"></i> Paga €3.04</span>
+    </button>
+    <div class="pay-btn-sub">
+      <i class="ti ti-shield-check"></i>
+      Protetto da Stripe · Rimborso garantito
+    </div>
+  </div>
+
+  <div class="stripe-trust">
+    <div class="st-item"><i class="ti ti-lock"></i> SSL 256-bit</div>
+    <div class="st-item"><i class="ti ti-shield"></i> PCI-DSS</div>
+    <div class="st-item"><i class="ti ti-rotate-clockwise"></i> Rimborso facile</div>
+  </div>
+  <div class="spacer"></div>
+</div>
+
+<!-- ══════════════════════════
+     STEP 2 — PROCESSING
+══════════════════════════ -->
+<div class="screen" id="s-processing">
+  <div class="processing-wrap">
+    <div class="proc-ring">
+      <div class="proc-spinner"></div>
+      <i class="ti ti-credit-card proc-icon"></i>
+    </div>
+    <div class="proc-title">Elaborazione…</div>
+    <div class="proc-sub">Stiamo elaborando il pagamento in modo sicuro. Non chiudere questa pagina.</div>
+    <div class="proc-steps">
+      <div class="proc-step" id="ps-auth">
+        <div class="proc-step-icon ps-active" id="psi-auth"><i class="ti ti-lock"></i></div>
+        <div class="proc-step-text">Verifica sicurezza Stripe</div>
+      </div>
+      <div class="proc-step" id="ps-charge">
+        <div class="proc-step-icon ps-wait" id="psi-charge"><i class="ti ti-credit-card"></i></div>
+        <div class="proc-step-text">Addebito carta</div>
+      </div>
+      <div class="proc-step" id="ps-split">
+        <div class="proc-step-icon ps-wait" id="psi-split"><i class="ti ti-arrows-split-2"></i></div>
+        <div class="proc-step-text">Accredito conducente via Stripe Connect</div>
+      </div>
+      <div class="proc-step" id="ps-confirm">
+        <div class="proc-step-icon ps-wait" id="psi-confirm"><i class="ti ti-circle-check"></i></div>
+        <div class="proc-step-text">Conferma prenotazione</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     STEP 3 — SUCCESS
+══════════════════════════ -->
+<div class="screen" id="s-success">
+  <div class="success-wrap">
+    <div class="success-ring"><i class="ti ti-check"></i></div>
+    <div class="success-title">Pagamento riuscito!</div>
+    <div class="success-sub">Il conducente è stato avvisato. Trovati al punto di ritrovo 5 minuti prima.</div>
+    <div class="receipt">
+      <div class="receipt-header">
+        <div class="receipt-title">Ricevuta di pagamento</div>
+        <div class="receipt-id" id="receipt-id">#CP-00000</div>
+      </div>
+      <div class="receipt-row"><span class="rl">Conducente</span><span class="rv">Marco Rossetti</span></div>
+      <div class="receipt-row"><span class="rl">Percorso</span><span class="rv">S. Michele → C. Verona</span></div>
+      <div class="receipt-row"><span class="rl">Data</span><span class="rv" id="receipt-date">—</span></div>
+      <div class="receipt-row"><span class="rl">Orario</span><span class="rv">09:00</span></div>
+      <div class="receipt-row"><span class="rl">Metodo</span><span class="rv" id="receipt-method">—</span></div>
+      <div class="receipt-row"><span class="rl">Al conducente</span><span class="rv">€2.50</span></div>
+      <div class="receipt-row"><span class="rl">Commissione CityPass (10%)</span><span class="rv">€0.25</span></div>
+      <div class="receipt-row"><span class="rl">Costi Stripe</span><span class="rv">€0.29</span></div>
+      <div class="receipt-total">
+        <span class="rt-label">Totale addebitato</span>
+        <span class="rt-val">€3.04</span>
+      </div>
+    </div>
+    <div class="success-actions">
+      <a class="sca-btn sca-primary" href="citypass-mappa.html">
+        <i class="ti ti-map"></i> Segui il percorso live
+      </a>
+      <a class="sca-btn sca-outline" href="citypass-chat.html">
+        <i class="ti ti-message"></i> Scrivi al conducente
+      </a>
+      <a class="sca-btn sca-ghost" href="citypass.html">
+        <i class="ti ti-home"></i> Torna alla home
+      </a>
+    </div>
+    <div class="spacer"></div>
+  </div>
+</div>
+
+<script>
+/* ── STATE ── */
+let selectedMethod = 'saved-visa'; // default saved card
+let selectedSaved  = 'sc-visa';
+let saveCard = true;
+let showingNewCard = false;
+
+/* ── METHOD SELECTION ── */
+function selectMethod(id) {
+  // Deselect saved cards
+  document.querySelectorAll('.saved-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.method-card').forEach(c => {
+    c.className = c.className.replace(' selected','').replace(' selected-stripe','');
+  });
+  selectedMethod = id;
+  const el = document.getElementById(id);
+  el.classList.add(id === 'm-card' ? 'selected-stripe' : 'selected');
+  // Show card form only for new card
+  document.getElementById('card-form').classList.toggle('show', id === 'm-card');
+  document.getElementById('saved-cards').classList.toggle('show', false);
+}
+
+function selectSaved(id) {
+  document.querySelectorAll('.saved-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.method-card').forEach(c => {
+    c.className = c.className.replace(' selected','').replace(' selected-stripe','');
+  });
+  document.getElementById(id).classList.add('selected');
+  document.getElementById('card-form').classList.remove('show');
+  selectedSaved = id;
+  selectedMethod = 'saved-' + id;
+}
+
+function showNewCard() {
+  document.querySelectorAll('.saved-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('saved-cards').classList.remove('show');
+  selectMethod('m-card');
+}
+
+/* ── CARD FORMATTING ── */
+function formatCard(inp) {
+  let v = inp.value.replace(/\D/g,'').substring(0,16);
+  inp.value = v.replace(/(.{4})/g,'$1 ').trim();
+  // Detect brand
+  const icon = document.getElementById('card-icon');
+  if (v.startsWith('4')) icon.className = 'ti ti-brand-visa cf-icon';
+  else if (/^5[1-5]/.test(v)) icon.className = 'ti ti-credit-card cf-icon';
+  else icon.className = 'ti ti-credit-card cf-icon';
+}
+
+function formatExpiry(inp) {
+  let v = inp.value.replace(/\D/g,'').substring(0,4);
+  if (v.length >= 3) v = v.substring(0,2) + '/' + v.substring(2);
+  inp.value = v;
+}
+
+function toggleSaveCard() {
+  saveCard = !saveCard;
+  document.getElementById('save-check').style.background = saveCard ? 'var(--accent)' : 'var(--bg)';
+  document.getElementById('save-check').style.borderColor = saveCard ? 'var(--accent)' : 'var(--border2)';
+  document.getElementById('save-icon').style.display = saveCard ? 'block' : 'none';
+}
+
+/* ── TOOLTIP ── */
+function toggleTooltip(id) {
+  const all = ['tt-driver','tt-commission','tt-stripe'];
+  all.forEach(tid => {
+    const el = document.getElementById(tid);
+    if (tid === id) {
+      el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    } else {
+      el.style.display = 'none';
+    }
+  });
+}
+
+/* ── FORM VALIDATION ── */
+function clearCfError(id) {
+  document.getElementById(id).classList.remove('has-error');
+}
+
+function validateCardForm() {
+  if (selectedMethod !== 'm-card') return true;
+  let ok = true;
+  const name = document.getElementById('inp-name').value.trim();
+  const num  = document.getElementById('inp-number').value.replace(/\s/g,'');
+  const exp  = document.getElementById('inp-expiry').value;
+  const cvc  = document.getElementById('inp-cvc').value;
+  if (!name) { document.getElementById('cf-name').classList.add('has-error'); ok = false; }
+  if (num.length < 16) { document.getElementById('cf-number').classList.add('has-error'); ok = false; }
+  if (exp.length < 5) { document.getElementById('cf-expiry').classList.add('has-error'); ok = false; }
+  if (cvc.length < 3) { document.getElementById('cf-cvc').classList.add('has-error'); ok = false; }
+  return ok;
+}
+
+/* ── PAYMENT FLOW ── */
+function startPayment() {
+  if (!validateCardForm()) return;
+  const btn = document.getElementById('pay-btn');
+  btn.classList.add('loading');
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    go('s-processing');
+    document.getElementById('topbar-title').textContent = 'Elaborazione';
+    runProcessingSteps();
+  }, 600);
+}
+
+const steps = [
+  { id:'auth',    dur:1200 },
+  { id:'charge',  dur:1000 },
+  { id:'split',   dur:900  },
+  { id:'confirm', dur:700  },
+];
+
+function runProcessingSteps() {
+  let delay = 0;
+  steps.forEach((s, i) => {
+    setTimeout(() => {
+      // Activate current
+      const icon = document.getElementById('psi-'+s.id);
+      const row  = document.getElementById('ps-'+s.id);
+      icon.className = 'proc-step-icon ps-active';
+      row.classList.add('active');
+    }, delay);
+    delay += s.dur;
+    setTimeout(() => {
+      // Mark done
+      const icon = document.getElementById('psi-'+s.id);
+      const row  = document.getElementById('ps-'+s.id);
+      icon.className = 'proc-step-icon ps-done';
+      icon.innerHTML = '<i class="ti ti-check"></i>';
+      row.classList.remove('active');
+      row.classList.add('done');
+    }, delay);
+    delay += 200;
+  });
+  setTimeout(() => showSuccess(), delay + 300);
+}
+
+function showSuccess() {
+  go('s-success');
+  document.getElementById('topbar-title').textContent = 'Conferma';
+  // Receipt
+  const id = '#CP-' + Math.floor(100000 + Math.random()*900000);
+  document.getElementById('receipt-id').textContent = id;
+  const now = new Date();
+  document.getElementById('receipt-date').textContent =
+    now.toLocaleDateString('it-IT', { day:'numeric', month:'long', year:'numeric' });
+  const methodNames = {
+    'saved-sc-visa':  'Visa •••• 4521',
+    'saved-sc-mc':    'Mastercard •••• 8834',
+    'm-card':         'Nuova carta',
+    'm-apple':        'Apple Pay',
+    'm-google':       'Google Pay',
+    'm-satispay':     'Satispay',
+  };
+  document.getElementById('receipt-method').textContent = methodNames[selectedMethod] || 'Carta';
+}
+
+/* ── NAVIGATE ── */
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* ── INIT: save card check state ── */
+document.getElementById('save-check').style.background = 'var(--accent)';
+document.getElementById('save-check').style.borderColor = 'var(--accent)';
+document.getElementById('save-icon').style.display = 'block';
+</script>
+</body>
+</html>
