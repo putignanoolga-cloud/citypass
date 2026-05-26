@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>CityPass — Mappa realtime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<style>
+:root{
+  --bg:#F5F2ED;--surface:#FDFCFA;--surface2:#EFEBE4;
+  --accent:#2B5F3E;--accent2:#E8A045;
+  --text:#1A1A18;--text2:#6B6860;--text3:#9E9B94;
+  --border:rgba(26,26,24,.10);--border2:rgba(26,26,24,.18);
+  --radius:16px;--radius-sm:10px;
+  --shadow:0 2px 16px rgba(26,26,24,.08);--shadow-lg:0 8px 40px rgba(26,26,24,.14);
+  --font:'DM Sans',sans-serif;--font-display:'DM Serif Display',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:430px;margin:0 auto;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;gap:10px;padding:13px 16px 11px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;z-index:30}
+.back-btn{width:36px;height:36px;border-radius:50%;background:var(--bg);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);font-size:18px;flex-shrink:0;text-decoration:none;transition:background .15s}
+.back-btn:hover{background:var(--surface2)}
+.tb-info{flex:1}
+.tb-title{font-size:15px;font-weight:600;color:var(--text);line-height:1.2}
+.tb-sub{font-size:11px;color:var(--text3)}
+.tb-avatar{width:36px;height:36px;border-radius:50%;background:#D4EAD9;color:#1E5E30;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.live-badge{display:flex;align-items:center;gap:5px;background:#FDF0EE;border:1px solid rgba(224,64,50,.2);border-radius:20px;padding:4px 10px;flex-shrink:0}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#E24B4A;animation:blink 1.3s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.live-text{font-size:11px;font-weight:600;color:#E24B4A}
+
+/* MAP */
+#map{flex:1;z-index:1;min-height:0}
+
+/* TRIP CARD (sliding panel) */
+.trip-panel{flex-shrink:0;background:var(--surface);border-top:1px solid var(--border);z-index:20;transition:max-height .3s ease}
+.panel-handle-wrap{padding:8px 0 2px;cursor:pointer}
+.panel-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto}
+
+/* ETA BAR */
+.eta-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-bottom:1px solid var(--border)}
+.eta-cell{display:flex;flex-direction:column;align-items:center;padding:10px 8px}
+.eta-cell:not(:last-child){border-right:1px solid var(--border)}
+.eta-val{font-size:19px;font-weight:600;color:var(--text);line-height:1}
+.eta-lbl{font-size:10px;color:var(--text3);font-weight:500;margin-top:3px;text-transform:uppercase;letter-spacing:.05em}
+.eta-val.accent{color:var(--accent)}
+.eta-val.amber{color:var(--accent2)}
+
+/* WAYPOINT LIST */
+.waypoints{padding:10px 16px 14px}
+.wp-item{display:flex;align-items:center;gap:12px;padding:7px 0;position:relative}
+.wp-item:not(:last-child)::after{content:'';position:absolute;left:10px;top:28px;width:2px;height:calc(100% - 10px);background:var(--border2)}
+.wp-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;z-index:1}
+.wp-dot.done{background:var(--accent);border-color:var(--accent);color:#fff}
+.wp-dot.current{background:var(--accent2);border-color:var(--accent2);color:#fff;animation:pulse-wp .9s infinite alternate}
+@keyframes pulse-wp{from{transform:scale(1)}to{transform:scale(1.15)}}
+.wp-dot.next{background:var(--bg);border-color:var(--border2);color:var(--text3)}
+.wp-info{flex:1}
+.wp-name{font-size:13px;font-weight:600;color:var(--text)}
+.wp-sub{font-size:11px;color:var(--text3)}
+.wp-badge{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;flex-shrink:0}
+.wb-done{background:#EAF3DE;color:#1E5E30}
+.wb-current{background:#FAEEDA;color:#633806}
+.wb-next{background:var(--surface2);color:var(--text3)}
+
+/* BOTTOM CTA */
+.panel-cta{padding:0 16px 16px;display:flex;gap:10px}
+.btn-p{flex:1;padding:12px;border-radius:var(--radius);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-p-primary{background:var(--accent);color:#fff}
+.btn-p-primary:hover{opacity:.88}
+.btn-p-outline{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+.btn-p-outline:hover{background:rgba(43,95,62,.05)}
+
+/* MAP POPUP */
+.leaflet-popup-content-wrapper{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);padding:0;overflow:hidden}
+.leaflet-popup-content{margin:0}
+.leaflet-popup-tip-container{display:none}
+.map-popup{padding:11px 14px;min-width:150px}
+.mp-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px}
+.mp-detail{font-size:12px;color:var(--text2)}
+
+/* FAB */
+.fab{position:absolute;bottom:300px;right:16px;z-index:15;width:44px;height:44px;border-radius:50%;background:var(--surface);border:1px solid var(--border2);box-shadow:var(--shadow-lg);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:19px;color:var(--text2);transition:all .15s}
+.fab:hover{background:var(--surface2)}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="back-btn" href="citypass.html"><i class="ti ti-arrow-left"></i></a>
+  <div class="tb-info">
+    <div class="tb-title">Marco R. · Fiat Panda</div>
+    <div class="tb-sub">San Michele → Centro Verona</div>
+  </div>
+  <div class="live-badge"><div class="live-dot"></div><div class="live-text">LIVE</div></div>
+  <div class="tb-avatar">MR</div>
+</div>
+
+<!-- MAP -->
+<div id="map"></div>
+
+<!-- FAB -->
+<button class="fab" onclick="refitMap()" title="Mostra tutto il percorso">
+  <i class="ti ti-route"></i>
+</button>
+
+<!-- TRIP PANEL -->
+<div class="trip-panel" id="trip-panel">
+  <div class="panel-handle-wrap" onclick="togglePanel()"><div class="panel-handle"></div></div>
+
+  <div class="eta-bar">
+    <div class="eta-cell"><div class="eta-val accent" id="eta-min">4</div><div class="eta-lbl">Min arrivo</div></div>
+    <div class="eta-cell"><div class="eta-val" id="eta-km">2.3</div><div class="eta-lbl">Km rimasti</div></div>
+    <div class="eta-cell"><div class="eta-val amber" id="eta-next">San Michele</div><div class="eta-lbl">Prossima tappa</div></div>
+  </div>
+
+  <div class="waypoints" id="waypoint-list"></div>
+
+  <div class="panel-cta">
+    <button class="btn-p btn-p-outline" onclick="showToast('Chat aperta')"><i class="ti ti-message"></i> Chat</button>
+    <button class="btn-p btn-p-primary" onclick="showToast('Conducente chiamato')"><i class="ti ti-phone"></i> Chiama</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div style="position:absolute;top:80px;left:50%;transform:translateX(-50%);z-index:200;background:var(--text);color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:500;white-space:nowrap;opacity:0;transition:opacity .3s;pointer-events:none" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script>
+/* ── VERONA WAYPOINTS (reali) ── */
+const WAYPOINTS = [
+  { id:0, name:"San Michele",        detail:"Fermata bus Via Cavour",     lat:45.4282, lng:10.9723, status:"done" },
+  { id:1, name:"Via Marsala",        detail:"Fermata aggiuntiva",          lat:45.4310, lng:10.9780, status:"current" },
+  { id:2, name:"Piazzale Olimpia",   detail:"Tappa intermedia",           lat:45.4355, lng:10.9840, status:"next" },
+  { id:3, name:"Centro — Piazza Bra",detail:"Destinazione finale",        lat:45.4390, lng:10.9935, status:"next" },
+];
+
+/* conducente: posizione simulata in movimento */
+let driverPos = { lat:45.4295, lng:10.9748 };
+let driverMarker = null;
+let routeLine = null;
+let panelOpen = true;
+
+/* ── MAP INIT ── */
+const map = L.map('map', { zoomControl:false, attributionControl:true });
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>', maxZoom:19
+}).addTo(map);
+L.control.zoom({ position:'topright' }).addTo(map);
+
+/* ── ICONS ── */
+function driverIcon() {
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:44px;height:44px;border-radius:50%;background:#2B5F3E;border:3px solid #fff;box-shadow:0 3px 14px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#fff">MR</div>`,
+    iconSize:[44,44],iconAnchor:[22,22]
+  });
+}
+
+function waypointIcon(status, label) {
+  const colors = { done:'#2B5F3E', current:'#E8A045', next:'#9E9B94' };
+  const bg = colors[status];
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:32px;height:32px;border-radius:50%;background:${bg};border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:#fff">${label}</div>`,
+    iconSize:[32,32],iconAnchor:[16,16]
+  });
+}
+
+/* ── RENDER MAP ── */
+function initMap() {
+  // Route polyline (straight segments, no routing API needed)
+  const coords = WAYPOINTS.map(w => [w.lat, w.lng]);
+  const fullLine = L.polyline(coords, { color:'#2B5F3E', weight:4, opacity:.5, dashArray:'8,6' }).addTo(map);
+
+  // Done segment
+  const doneCoords = [ [driverPos.lat, driverPos.lng], ...WAYPOINTS.filter(w=>w.status==='done').map(w=>[w.lat,w.lng]) ];
+  L.polyline([[WAYPOINTS[0].lat,WAYPOINTS[0].lng],[WAYPOINTS[1].lat,WAYPOINTS[1].lng]], { color:'#2B5F3E', weight:5, opacity:.9 }).addTo(map);
+
+  // Waypoint markers
+  const labels = ['A','B','C','D'];
+  WAYPOINTS.forEach((w,i) => {
+    const m = L.marker([w.lat,w.lng], { icon:waypointIcon(w.status,labels[i]), zIndexOffset: w.status==='current'?500:0 }).addTo(map);
+    m.bindPopup(`<div class="map-popup"><div class="mp-name">${w.name}</div><div class="mp-detail">${w.detail}</div></div>`, { maxWidth:180, closeButton:false });
+  });
+
+  // Driver marker
+  driverMarker = L.marker([driverPos.lat, driverPos.lng], { icon:driverIcon(), zIndexOffset:1000 }).addTo(map);
+  driverMarker.bindPopup(`<div class="map-popup"><div class="mp-name">Marco R.</div><div class="mp-detail">Fiat Panda · in movimento</div></div>`, { maxWidth:160, closeButton:false });
+
+  refitMap();
+  renderWaypoints();
+  startSimulation();
+}
+
+function refitMap() {
+  const bounds = L.latLngBounds(WAYPOINTS.map(w=>[w.lat,w.lng]));
+  bounds.extend([driverPos.lat, driverPos.lng]);
+  map.fitBounds(bounds, { padding:[50,50] });
+}
+
+/* ── WAYPOINTS RENDER ── */
+function renderWaypoints() {
+  const statusLabel = { done:'Completata', current:'In corso', next:'In attesa' };
+  const statusClass = { done:'wb-done', current:'wb-current', next:'wb-next' };
+  const dotClass    = { done:'done', current:'current', next:'next' };
+  const labels = ['A','B','C','D'];
+  document.getElementById('waypoint-list').innerHTML = WAYPOINTS.map((w,i)=>`
+    <div class="wp-item">
+      <div class="wp-dot ${dotClass[w.status]}">${labels[i]}</div>
+      <div class="wp-info">
+        <div class="wp-name">${w.name}</div>
+        <div class="wp-sub">${w.detail}</div>
+      </div>
+      <span class="wp-badge ${statusClass[w.status]}">${statusLabel[w.status]}</span>
+    </div>`).join('');
+}
+
+/* ── SIMULATION ── */
+let simStep = 0;
+const target = WAYPOINTS[1]; // heading to "current" waypoint
+function startSimulation() {
+  setInterval(() => {
+    // Move driver toward next waypoint
+    const dlat = target.lat - driverPos.lat;
+    const dlng = target.lng - driverPos.lng;
+    const dist = Math.sqrt(dlat*dlat + dlng*dlng);
+    if (dist > 0.0002) {
+      driverPos.lat += dlat * 0.08;
+      driverPos.lng += dlng * 0.08;
+      driverMarker.setLatLng([driverPos.lat, driverPos.lng]);
+    }
+    // Update ETA countdown
+    const etaEl = document.getElementById('eta-min');
+    let cur = parseInt(etaEl.textContent);
+    if (cur > 1) { cur--; etaEl.textContent = cur; }
+    // Update km
+    const kmEl = document.getElementById('eta-km');
+    let curKm = parseFloat(kmEl.textContent);
+    if (curKm > 0.1) { kmEl.textContent = Math.max(0.1, curKm - 0.1).toFixed(1); }
+  }, 3000);
+}
+
+/* ── PANEL TOGGLE ── */
+function togglePanel() {
+  panelOpen = !panelOpen;
+  const panel = document.getElementById('trip-panel');
+  panel.style.maxHeight = panelOpen ? '400px' : '36px';
+  panel.style.overflow = 'hidden';
+}
+
+/* ── TOAST ── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.opacity = '1';
+  setTimeout(() => t.style.opacity = '0', 2500);
+}
+
+initMap();
+</script>
+</body>
+</html>

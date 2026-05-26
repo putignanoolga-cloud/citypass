@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>CityPass — Passaggi urbani</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
+
+<style>
+  :root {
+    --bg: #F5F2ED;
+    --surface: #FDFCFA;
+    --surface2: #EFEBE4;
+    --accent: #2B5F3E;
+    --accent2: #E8A045;
+    --text: #1A1A18;
+    --text2: #6B6860;
+    --text3: #9E9B94;
+    --border: rgba(26,26,24,0.10);
+    --border2: rgba(26,26,24,0.18);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 2px 16px rgba(26,26,24,0.08);
+    --shadow-lg: 0 8px 40px rgba(26,26,24,0.13);
+    --font: 'DM Sans', sans-serif;
+    --font-display: 'DM Serif Display', serif;
+    --nav-h: 72px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; min-height: 100vh; padding-bottom: calc(var(--nav-h) + 12px); animation: fadeIn 0.18s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── HEADER BAR ── */
+  .header-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 20;
+  }
+  .header-logo {
+    font-family: var(--font-display); font-size: 20px; color: var(--accent);
+    letter-spacing: -0.02em; cursor: pointer;
+  }
+  .header-actions { display: flex; align-items: center; gap: 6px; }
+  .hbtn {
+    padding: 6px 12px; border-radius: 20px;
+    font-family: var(--font); font-size: 12px; font-weight: 500;
+    cursor: pointer; white-space: nowrap; transition: all 0.15s;
+    border: 1px solid var(--border2); background: transparent; color: var(--text2);
+  }
+  .hbtn:hover { background: var(--surface2); color: var(--text); }
+  .hbtn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .hbtn-primary:hover { opacity: 0.88; background: var(--accent); color: #fff; }
+  .hbtn-lang {
+    width: 32px; height: 32px; padding: 0; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; color: var(--text2);
+    border: 1px solid var(--border2); background: transparent; cursor: pointer;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .hbtn-lang:hover { background: var(--surface2); color: var(--text); }
+
+  /* ── LANG DROPDOWN ── */
+  .lang-wrap { position: relative; }
+  .lang-menu {
+    display: none; position: absolute; top: calc(100% + 8px); right: 0;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); overflow: hidden;
+    box-shadow: var(--shadow-lg); min-width: 130px; z-index: 200;
+  }
+  .lang-menu.open { display: block; }
+  .lang-opt {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; font-size: 13px; font-weight: 500; color: var(--text2);
+    cursor: pointer; transition: background 0.12s; border: none; background: none;
+    width: 100%; text-align: left;
+  }
+  .lang-opt:hover { background: var(--bg); color: var(--text); }
+  .lang-opt.active { color: var(--accent); }
+  .lang-flag { font-size: 16px; }
+
+  /* ── MODAL OVERLAY ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 300;
+    background: rgba(0,0,0,0.45); align-items: flex-end; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-sheet {
+    background: var(--surface); border-radius: 24px 24px 0 0;
+    width: 100%; max-width: 430px; padding: 0 0 32px;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(60px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+  .modal-handle { width: 40px; height: 4px; background: var(--border2); border-radius: 2px; margin: 14px auto 20px; }
+  .modal-title { font-family: var(--font-display); font-size: 26px; color: var(--text); padding: 0 24px 6px; }
+  .modal-sub { font-size: 14px; color: var(--text3); padding: 0 24px 24px; }
+  .modal-form { padding: 0 24px; }
+  .modal-field { margin-bottom: 14px; }
+  .modal-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .modal-field input {
+    width: 100%; padding: 12px 14px;
+    background: var(--bg); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); font-family: var(--font); font-size: 15px;
+    color: var(--text); outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .modal-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,95,62,0.12); }
+  .modal-cta {
+    display: block; width: calc(100% - 48px); margin: 20px 24px 0;
+    padding: 14px; border-radius: var(--radius); font-family: var(--font);
+    font-size: 16px; font-weight: 600; cursor: pointer; border: none;
+    background: var(--accent); color: #fff; transition: opacity 0.15s;
+  }
+  .modal-cta:hover { opacity: 0.88; }
+  .modal-switch { text-align: center; margin-top: 16px; padding: 0 24px; font-size: 13px; color: var(--text3); }
+  .modal-switch a { color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: none; }
+  .modal-divider { height: 1px; background: var(--border); margin: 20px 24px; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px 12px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .topbar-title { font-family: var(--font); font-size: 17px; font-weight: 600; color: var(--text); }
+  .back-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--bg); border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text); font-size: 18px; flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .back-btn:hover { background: var(--surface2); }
+
+  /* ── NAV BAR ── */
+  .navbar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 430px;
+    height: var(--nav-h);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 8px 8px;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    gap: 3px; padding: 10px 4px;
+    cursor: pointer; border: none; background: none;
+    color: var(--text3); font-size: 10px; font-family: var(--font);
+    transition: color 0.15s;
+  }
+  .nav-item i { font-size: 22px; }
+  .nav-item.active { color: var(--accent); }
+  .nav-item.active i { font-weight: 600; }
+
+  /* ══════════════════════════════════
+     HOME SCREEN
+  ══════════════════════════════════ */
+  .home-hero {
+    background: var(--accent);
+    padding: 28px 20px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .home-hero::before {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 220px; height: 220px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+  }
+  .home-hero::after {
+    content: '';
+    position: absolute; bottom: -60px; left: 20px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .hero-label { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.55); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .hero-title { font-family: var(--font-display); font-size: 36px; color: #fff; line-height: 1.1; margin-bottom: 4px; }
+  .hero-sub { font-size: 14px; color: rgba(255,255,255,0.65); margin-bottom: 24px; }
+  .hero-searchbox {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 4px 4px 4px 16px;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: var(--shadow-lg);
+    position: relative; z-index: 1;
+  }
+  .hero-searchbox input {
+    flex: 1; border: none; background: transparent;
+    font-family: var(--font); font-size: 14px; color: var(--text);
+    outline: none; padding: 10px 0;
+  }
+  .hero-searchbox input::placeholder { color: var(--text3); }
+  .hero-search-btn {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 12px; padding: 10px 18px;
+    font-family: var(--font); font-size: 14px; font-weight: 600;
+    cursor: pointer; white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+  .hero-search-btn:hover { opacity: 0.88; }
+
+  .section-label {
+    font-size: 11px; font-weight: 600; color: var(--text3);
+    letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 20px 20px 10px;
+  }
+
+  /* ── QUICK STATS ── */
+  .stats-row { display: flex; gap: 10px; padding: 0 20px 4px; }
+  .stat-chip {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .stat-icon { font-size: 20px; color: var(--accent); }
+  .stat-val { font-size: 18px; font-weight: 600; color: var(--text); line-height: 1; }
+  .stat-lbl { font-size: 11px; color: var(--text3); }
+
+  /* ── RIDE CARD ── */
+  .ride-card {
+    margin: 0 20px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: box-shadow 0.18s, transform 0.12s;
+  }
+  .ride-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+  .ride-card:active { transform: scale(0.99); }
+
+  .rc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .rc-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 14px; flex-shrink: 0;
+  }
+  .av-green { background: #D4EAD9; color: #1E5E30; }
+  .av-amber { background: #FAE8CC; color: #8A4F00; }
+  .av-blue  { background: #D4E4F5; color: #1A4272; }
+  .av-rose  { background: #F5D4DD; color: #6B1E35; }
+
+  .rc-name { font-size: 15px; font-weight: 600; color: var(--text); line-height: 1.2; }
+  .rc-meta { font-size: 12px; color: var(--text3); }
+  .rc-stars { color: var(--accent2); font-size: 12px; }
+
+  .rc-price { margin-left: auto; text-align: right; }
+  .rc-price-val { font-family: var(--font-display); font-size: 22px; color: var(--accent); line-height: 1; }
+  .rc-price-lbl { font-size: 10px; color: var(--text3); }
+
+  .rc-route { margin-bottom: 12px; }
+  .rc-route-row { display: flex; align-items: center; gap: 10px; padding: 3px 0; }
+  .rc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dot-green { background: var(--accent); }
+  .dot-amber { background: var(--accent2); }
+  .rc-connector { width: 10px; display: flex; justify-content: center; }
+  .rc-connector-line { width: 1.5px; height: 16px; background: var(--border2); }
+  .rc-place { font-size: 13px; color: var(--text); font-weight: 400; }
+  .rc-place.muted { color: var(--text2); }
+
+  .rc-footer { display: flex; align-items: center; gap: 8px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .chip {
+    font-size: 11px; font-weight: 500; padding: 4px 10px;
+    border-radius: 20px; display: flex; align-items: center; gap: 4px;
+  }
+  .chip-green { background: #D4EAD9; color: #1E5E30; }
+  .chip-amber { background: #FAE8CC; color: #8A4F00; }
+  .chip-blue  { background: #D4E4F5; color: #1A4272; }
+  .rc-time { margin-left: auto; font-size: 13px; color: var(--text2); font-weight: 500; display: flex; align-items: center; gap: 4px; }
+
+  /* ══════════════════════════════════
+     RIDES LIST SCREEN
+  ══════════════════════════════════ */
+  .filter-bar {
+    display: flex; gap: 8px; padding: 14px 20px;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-btn {
+    flex-shrink: 0; padding: 7px 16px;
+    border-radius: 20px; border: 1px solid var(--border2);
+    background: var(--surface); color: var(--text2);
+    font-family: var(--font); font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ══════════════════════════════════
+     DETAIL SCREEN
+  ══════════════════════════════════ */
+  .detail-hero {
+    padding: 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-driver-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+  .detail-avatar { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex-shrink: 0; }
+  .detail-name { font-size: 20px; font-weight: 600; }
+  .detail-stars { font-size: 13px; color: var(--accent2); }
+  .detail-reviews { font-size: 12px; color: var(--text3); }
+
+  .route-card {
+    background: var(--bg); border-radius: var(--radius-sm);
+    padding: 14px 16px; display: flex; flex-direction: column; gap: 0;
+  }
+  .route-stop { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+  .route-stop-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .route-stop-label { font-size: 14px; font-weight: 500; color: var(--text); }
+  .route-stop-sub { font-size: 12px; color: var(--text3); }
+  .route-sep { display: flex; gap: 12px; align-items: stretch; padding: 0; }
+  .route-sep-line-wrap { width: 12px; display: flex; justify-content: center; }
+  .route-sep-line { width: 2px; height: 20px; background: var(--border2); border-radius: 2px; }
+
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; }
+  .info-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px;
+  }
+  .info-box-label { font-size: 11px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .info-box-val { font-size: 17px; font-weight: 600; color: var(--text); }
+  .info-box-val.accent { color: var(--accent); font-family: var(--font-display); font-size: 22px; }
+
+  .detail-notes {
+    margin: 0 20px 20px;
+    background: #FEF8EF; border: 1px solid #FADFA4;
+    border-radius: var(--radius-sm); padding: 14px 16px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .detail-notes i { font-size: 18px; color: var(--accent2); flex-shrink: 0; margin-top: 1px; }
+  .detail-notes p { font-size: 13px; color: #6B4F00; line-height: 1.5; }
+
+  /* ══════════════════════════════════
+     OFFER SCREEN
+  ══════════════════════════════════ */
+  .offer-header {
+    background: var(--accent);
+    padding: 24px 20px 28px;
+  }
+  .offer-header h1 { font-family: var(--font-display); font-size: 28px; color: #fff; }
+  .offer-header p { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 4px; }
+
+  .form-section { padding: 20px 20px 0; }
+  .form-section-title {
+    font-size: 11px; font-weight: 600; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .form-section-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .form-field { margin-bottom: 14px; }
+  .form-field label { display: block; font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
+  .form-field input, .form-field select, .form-field textarea {
+    width: 100%; padding: 12px 14px;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); font-family: var(--font); font-size: 14px;
+    color: var(--text); outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(43,95,62,0.12);
+  }
+  .form-field textarea { resize: none; height: 80px; }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .price-slider-wrap { padding: 0 20px 20px; }
+  .price-display {
+    text-align: center; padding: 20px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); margin-bottom: 16px;
+  }
+  .price-display-num { font-family: var(--font-display); font-size: 48px; color: var(--accent); line-height: 1; }
+  .price-display-lbl { font-size: 13px; color: var(--text3); }
+  input[type="range"] {
+    width: 100%; accent-color: var(--accent);
+    height: 4px; cursor: pointer;
+  }
+  .price-range-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text3); margin-top: 6px; }
+
+  /* ══════════════════════════════════
+     CONFIRM SCREEN
+  ══════════════════════════════════ */
+  .confirm-card {
+    margin: 20px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .confirm-card-header {
+    background: var(--accent); padding: 16px 20px;
+    font-family: var(--font-display); font-size: 20px; color: #fff;
+  }
+  .confirm-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 13px 20px; border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .confirm-row-label { color: var(--text3); font-weight: 400; }
+  .confirm-row-val { color: var(--text); font-weight: 500; }
+  .confirm-total {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; background: var(--bg);
+  }
+  .confirm-total-label { font-size: 15px; font-weight: 600; color: var(--text); }
+  .confirm-total-val { font-family: var(--font-display); font-size: 30px; color: var(--accent); }
+
+  .pickup-box {
+    margin: 0 20px 20px; background: #EDF7F1;
+    border: 1px solid #A8D9B8; border-radius: var(--radius-sm);
+    padding: 14px 16px; display: flex; gap: 12px; align-items: center;
+  }
+  .pickup-box i { font-size: 24px; color: var(--accent); flex-shrink: 0; }
+  .pickup-label { font-size: 11px; font-weight: 600; color: #1E5E30; text-transform: uppercase; letter-spacing: 0.06em; }
+  .pickup-val { font-size: 14px; font-weight: 500; color: var(--text); }
+
+  /* ══════════════════════════════════
+     SUCCESS SCREEN
+  ══════════════════════════════════ */
+  .success-wrap { padding: 48px 24px 24px; text-align: center; }
+  .success-ring {
+    width: 88px; height: 88px; border-radius: 50%;
+    background: #D4EAD9; display: flex; align-items: center;
+    justify-content: center; margin: 0 auto 24px; font-size: 40px;
+    color: var(--accent);
+  }
+  .success-title { font-family: var(--font-display); font-size: 32px; color: var(--text); margin-bottom: 8px; }
+  .success-sub { font-size: 14px; color: var(--text2); line-height: 1.6; max-width: 280px; margin: 0 auto 32px; }
+  .success-detail {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; text-align: left;
+    margin-bottom: 24px;
+  }
+  .success-detail-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 14px; }
+  .success-detail-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+  .sdl { color: var(--text3); }
+  .sdv { font-weight: 500; color: var(--text); }
+
+  /* ══════════════════════════════════
+     PROFILE SCREEN
+  ══════════════════════════════════ */
+  .profile-hero {
+    background: var(--accent); padding: 32px 20px 24px; text-align: center;
+  }
+  .profile-avatar-big {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: rgba(255,255,255,0.2); margin: 0 auto 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 700; color: #fff;
+  }
+  .profile-name { font-family: var(--font-display); font-size: 24px; color: #fff; }
+  .profile-stars { font-size: 14px; color: rgba(255,255,255,0.75); margin-top: 4px; }
+  .profile-stats { display: flex; justify-content: center; gap: 32px; margin-top: 20px; }
+  .pstat { text-align: center; }
+  .pstat-val { font-size: 20px; font-weight: 700; color: #fff; }
+  .pstat-lbl { font-size: 11px; color: rgba(255,255,255,0.55); }
+  .profile-menu { padding: 16px 0; }
+  .profile-item {
+    display: flex; align-items: center; gap: 14px; padding: 16px 20px;
+    cursor: pointer; transition: background 0.12s; border-bottom: 1px solid var(--border);
+  }
+  .profile-item:hover { background: var(--surface2); }
+  .profile-item-icon {
+    width: 40px; height: 40px; border-radius: var(--radius-sm);
+    background: var(--bg); display: flex; align-items: center;
+    justify-content: center; font-size: 20px; color: var(--accent); flex-shrink: 0;
+  }
+  .profile-item-label { font-size: 15px; font-weight: 500; color: var(--text); }
+  .profile-item-sub { font-size: 12px; color: var(--text3); }
+  .profile-item-arrow { margin-left: auto; color: var(--text3); font-size: 18px; }
+
+  /* ══════════════════════════════════
+     BUTTON
+  ══════════════════════════════════ */
+  .btn {
+    display: block; width: calc(100% - 40px); margin: 0 20px;
+    padding: 15px; border-radius: var(--radius);
+    font-family: var(--font); font-size: 16px; font-weight: 600;
+    cursor: pointer; border: none; text-align: center;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-outline {
+    background: transparent; color: var(--accent);
+    border: 1.5px solid var(--accent);
+  }
+  .btn-outline:hover { background: rgba(43,95,62,0.05); }
+  .btn-gap { margin-top: 12px; }
+
+  /* ══════════════════════════════════
+     EMPTY / MISC
+  ══════════════════════════════════ */
+  .spacer { height: 16px; }
+  .spacer-sm { height: 10px; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     HEADER BAR (persistente)
+══════════════════════════════════ -->
+<header class="header-bar" id="main-header">
+  <div class="header-logo" onclick="navGo('s-home','nav-home')">CityPass</div>
+  <div class="header-actions">
+    <button class="hbtn" onclick="openModal('modal-login')">Accedi</button>
+    <button class="hbtn hbtn-primary" onclick="openModal('modal-register')">Registrati</button>
+    <div class="lang-wrap">
+      <button class="hbtn-lang" id="lang-btn" onclick="toggleLang()" title="Lingua">IT</button>
+      <div class="lang-menu" id="lang-menu">
+        <button class="lang-opt active" onclick="setLang('IT','🇮🇹','Italiano')"><span class="lang-flag">🇮🇹</span> Italiano</button>
+        <button class="lang-opt" onclick="setLang('EN','🇬🇧','English')"><span class="lang-flag">🇬🇧</span> English</button>
+        <button class="lang-opt" onclick="setLang('DE','🇩🇪','Deutsch')"><span class="lang-flag">🇩🇪</span> Deutsch</button>
+        <button class="lang-opt" onclick="setLang('FR','🇫🇷','Français')"><span class="lang-flag">🇫🇷</span> Français</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ── MODAL LOGIN ── -->
+<div class="modal-overlay" id="modal-login" onclick="closeModalOutside(event,'modal-login')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Bentornato</div>
+    <div class="modal-sub">Accedi al tuo account CityPass</div>
+    <div class="modal-form">
+      <div class="modal-field"><label>Email</label><input type="email" placeholder="nome@email.com" /></div>
+      <div class="modal-field"><label>Password</label><input type="password" placeholder="••••••••" /></div>
+    </div>
+    <button class="modal-cta" onclick="closeModal('modal-login')">Accedi</button>
+    <div class="modal-switch">Non hai un account? <a onclick="switchModal('modal-login','modal-register')">Registrati</a></div>
+  </div>
+</div>
+
+<!-- ── MODAL REGISTER ── -->
+<div class="modal-overlay" id="modal-register" onclick="closeModalOutside(event,'modal-register')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Crea account</div>
+    <div class="modal-sub">Unisciti alla community di CityPass</div>
+    <div class="modal-form">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="modal-field"><label>Nome</label><input type="text" placeholder="Mario" /></div>
+        <div class="modal-field"><label>Cognome</label><input type="text" placeholder="Rossi" /></div>
+      </div>
+      <div class="modal-field"><label>Email</label><input type="email" placeholder="nome@email.com" /></div>
+      <div class="modal-field"><label>Password</label><input type="password" placeholder="min. 8 caratteri" /></div>
+    </div>
+    <button class="modal-cta" onclick="closeModal('modal-register')">Crea account</button>
+    <div class="modal-switch">Hai già un account? <a onclick="switchModal('modal-register','modal-login')">Accedi</a></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     HOME
+══════════════════════════════════ -->
+<div id="s-home" class="screen active">
+  <div class="home-hero">
+    <div class="hero-label">Verona e dintorni</div>
+    <div class="hero-title">City<br>Pass</div>
+    <div class="hero-sub">Passaggi urbani tra vicini</div>
+    <div class="hero-searchbox">
+      <i class="ti ti-map-pin" style="font-size:18px;color:#9E9B94"></i>
+      <input id="home-search" type="text" placeholder="Dove vuoi andare?" value="" />
+      <button class="hero-search-btn" onclick="doHomeSearch()">Cerca</button>
+    </div>
+  </div>
+
+  <div class="section-label">In questo momento</div>
+  <div class="stats-row">
+    <div class="stat-chip">
+      <i class="ti ti-car stat-icon"></i>
+      <div><div class="stat-val">14</div><div class="stat-lbl">passaggi oggi</div></div>
+    </div>
+    <div class="stat-chip">
+      <i class="ti ti-users stat-icon"></i>
+      <div><div class="stat-val">38</div><div class="stat-lbl">utenti attivi</div></div>
+    </div>
+  </div>
+
+  <div class="section-label">Prossime partenze</div>
+  <div id="home-rides"></div>
+  <div class="spacer"></div>
+</div>
+
+<!-- ══════════════════════════════════
+     RIDES LIST
+══════════════════════════════════ -->
+<div id="s-rides" class="screen">
+  <div class="topbar">
+    <div class="topbar-title">Passaggi disponibili</div>
+  </div>
+  <div class="filter-bar" id="filter-bar">
+    <button class="filter-btn active" onclick="filterRides('tutti',this)">Tutti</button>
+    <button class="filter-btn" onclick="filterRides('mattina',this)">Mattina</button>
+    <button class="filter-btn" onclick="filterRides('mezzogiorno',this)">Mezzogiorno</button>
+    <button class="filter-btn" onclick="filterRides('pomeriggio',this)">Pomeriggio</button>
+    <button class="filter-btn" onclick="filterRides('sera',this)">Sera</button>
+  </div>
+  <div class="spacer-sm"></div>
+  <div id="rides-list"></div>
+  <div class="spacer"></div>
+</div>
+
+<!-- ══════════════════════════════════
+     DETAIL
+══════════════════════════════════ -->
+<div id="s-detail" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()"><i class="ti ti-arrow-left"></i></button>
+    <div class="topbar-title">Dettaglio passaggio</div>
+  </div>
+  <div id="detail-body"></div>
+</div>
+
+<!-- ══════════════════════════════════
+     OFFER
+══════════════════════════════════ -->
+<div id="s-offer" class="screen">
+  <div class="offer-header">
+    <h1>Offri un passaggio</h1>
+    <p>Condividi il tuo tragitto e guadagna qualcosa</p>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title"><i class="ti ti-map-pin" style="font-size:16px"></i> Percorso</div>
+    <div class="form-field">
+      <label>Punto di partenza</label>
+      <input type="text" placeholder="Es. San Michele — fermata bus Via Cavour" />
+    </div>
+    <div class="form-field">
+      <label>Destinazione</label>
+      <input type="text" placeholder="Es. Centro, Piazza Bra" />
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title"><i class="ti ti-clock" style="font-size:16px"></i> Orari e posti</div>
+    <div class="form-row-2">
+      <div class="form-field">
+        <label>Orario partenza</label>
+        <input type="time" value="09:00" />
+      </div>
+      <div class="form-field">
+        <label>Posti offerti</label>
+        <select>
+          <option>1 posto</option>
+          <option selected>2 posti</option>
+          <option>3 posti</option>
+          <option>4 posti</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Frequenza</label>
+      <select>
+        <option>Solo oggi</option>
+        <option>Ogni giorno lavorativo</option>
+        <option>Lun / Mer / Ven</option>
+        <option>Mar / Gio</option>
+        <option>Ogni settimana (stesso giorno)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title"><i class="ti ti-car" style="font-size:16px"></i> Veicolo</div>
+    <div class="form-row-2">
+      <div class="form-field">
+        <label>Marca</label>
+        <input type="text" placeholder="Es. Fiat" />
+      </div>
+      <div class="form-field">
+        <label>Modello</label>
+        <input type="text" placeholder="Es. Panda" />
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title"><i class="ti ti-pencil" style="font-size:16px"></i> Note</div>
+    <div class="form-field">
+      <label>Informazioni per i passeggeri</label>
+      <textarea placeholder="Es. Posso fermarmi anche in Via Verdi. Prego presentarsi puntuali."></textarea>
+    </div>
+  </div>
+  <div class="spacer-sm"></div>
+
+  <div class="price-slider-wrap">
+    <div class="form-section-title" style="padding:0;margin-bottom:16px"><i class="ti ti-coin" style="font-size:16px"></i> Contributo spese</div>
+    <div class="price-display">
+      <div class="price-display-num" id="offer-price-display">€2.50</div>
+      <div class="price-display-lbl">per passeggero</div>
+    </div>
+    <input type="range" min="50" max="1000" step="50" value="250" oninput="updateOfferPrice(this.value)" />
+    <div class="price-range-labels"><span>€0.50</span><span>€10.00</span></div>
+  </div>
+
+  <div class="spacer-sm"></div>
+  <button class="btn btn-primary" onclick="submitOffer()">Pubblica passaggio</button>
+  <div class="spacer"></div>
+</div>
+
+<!-- ══════════════════════════════════
+     CONFIRM
+══════════════════════════════════ -->
+<div id="s-confirm" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="go('s-detail')"><i class="ti ti-arrow-left"></i></button>
+    <div class="topbar-title">Conferma prenotazione</div>
+  </div>
+  <div id="confirm-body"></div>
+</div>
+
+<!-- ══════════════════════════════════
+     SUCCESS
+══════════════════════════════════ -->
+<div id="s-success" class="screen">
+  <div class="success-wrap">
+    <div class="success-ring"><i class="ti ti-check"></i></div>
+    <div class="success-title">Prenotato!</div>
+    <div class="success-sub">Il conducente è stato avvisato. Trovati al punto di ritrovo 5 minuti prima della partenza.</div>
+    <div class="success-detail" id="success-detail"></div>
+    <button class="btn btn-primary" onclick="go('s-home')">Torna alla home</button>
+    <button class="btn btn-outline btn-gap" onclick="go('s-rides')">Vedi altri passaggi</button>
+    <div class="spacer"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     PROFILE
+══════════════════════════════════ -->
+<div id="s-profile" class="screen">
+  <div class="profile-hero">
+    <div class="profile-avatar-big">GT</div>
+    <div class="profile-name">Giulia Trevisan</div>
+    <div class="profile-stars">★ 4.9 · 27 recensioni</div>
+    <div class="profile-stats">
+      <div class="pstat"><div class="pstat-val">12</div><div class="pstat-lbl">passaggi presi</div></div>
+      <div class="pstat"><div class="pstat-val">3</div><div class="pstat-lbl">offerti</div></div>
+      <div class="pstat"><div class="pstat-val">€31</div><div class="pstat-lbl">risparmiati</div></div>
+    </div>
+  </div>
+  <div class="profile-menu">
+    <div class="profile-item">
+      <div class="profile-item-icon"><i class="ti ti-history"></i></div>
+      <div><div class="profile-item-label">Storico passaggi</div><div class="profile-item-sub">12 viaggi effettuati</div></div>
+      <i class="ti ti-chevron-right profile-item-arrow"></i>
+    </div>
+    <div class="profile-item">
+      <div class="profile-item-icon"><i class="ti ti-credit-card"></i></div>
+      <div><div class="profile-item-label">Metodi di pagamento</div><div class="profile-item-sub">Carta •••• 4521</div></div>
+      <i class="ti ti-chevron-right profile-item-arrow"></i>
+    </div>
+    <div class="profile-item">
+      <div class="profile-item-icon"><i class="ti ti-car"></i></div>
+      <div><div class="profile-item-label">La mia auto</div><div class="profile-item-sub">Aggiungi il tuo veicolo</div></div>
+      <i class="ti ti-chevron-right profile-item-arrow"></i>
+    </div>
+    <div class="profile-item">
+      <div class="profile-item-icon"><i class="ti ti-shield-check"></i></div>
+      <div><div class="profile-item-label">Verifica identità</div><div class="profile-item-sub">Aumenta la fiducia degli utenti</div></div>
+      <i class="ti ti-chevron-right profile-item-arrow"></i>
+    </div>
+    <div class="profile-item">
+      <div class="profile-item-icon"><i class="ti ti-bell"></i></div>
+      <div><div class="profile-item-label">Notifiche</div><div class="profile-item-sub">Avvisi passaggi e messaggi</div></div>
+      <i class="ti ti-chevron-right profile-item-arrow"></i>
+    </div>
+    <div class="profile-item">
+      <div class="profile-item-icon"><i class="ti ti-settings"></i></div>
+      <div><div class="profile-item-label">Impostazioni</div><div class="profile-item-sub">Privacy, account, preferenze</div></div>
+      <i class="ti ti-chevron-right profile-item-arrow"></i>
+    </div>
+  </div>
+  <div class="spacer"></div>
+</div>
+
+<!-- ══════════════════════════════════
+     BOTTOM NAV
+══════════════════════════════════ -->
+<nav class="navbar">
+  <button class="nav-item active" id="nav-home" onclick="navGo('s-home','nav-home')">
+    <i class="ti ti-home"></i><span>Home</span>
+  </button>
+  <button class="nav-item" id="nav-rides" onclick="navGo('s-rides','nav-rides')">
+    <i class="ti ti-car"></i><span>Passaggi</span>
+  </button>
+  <button class="nav-item" id="nav-offer" onclick="navGo('s-offer','nav-offer')">
+    <i class="ti ti-plus"></i><span>Offri</span>
+  </button>
+  <button class="nav-item" id="nav-profile" onclick="navGo('s-profile','nav-profile')">
+    <i class="ti ti-user"></i><span>Profilo</span>
+  </button>
+</nav>
+
+<script>
+/* ── DATA ── */
+const rides = [
+  {
+    id: 1, driver: "Marco Rossetti", initials: "MR", av: "av-green",
+    from: "San Michele", fromDetail: "Fermata bus — Via Cavour 14",
+    to: "Centro Verona", toDetail: "Piazza Bra / Verona Centro",
+    time: "09:00", seats: 2, price: 2.50, car: "Fiat Panda 2020",
+    rating: 4.8, reviews: 23, badge: "Frequente", badgeClass: "chip-green",
+    orario: "mattina", note: "Posso fare una breve deviazione su Via Verdi se serve. Prego essere puntuali."
+  },
+  {
+    id: 2, driver: "Giulia Ferretti", initials: "GF", av: "av-blue",
+    from: "San Michele", fromDetail: "Incrocio Via Roma / Via Po",
+    to: "Stazione FS", toDetail: "Verona Porta Nuova",
+    time: "08:30", seats: 1, price: 2.00, car: "VW Polo 2022",
+    rating: 4.9, reviews: 41, badge: "Super guida", badgeClass: "chip-blue",
+    orario: "mattina", note: ""
+  },
+  {
+    id: 3, driver: "Luca Toniolo", initials: "LT", av: "av-amber",
+    from: "San Michele", fromDetail: "Largo Europa — fontana centrale",
+    to: "Ospedale Borgo Trento", toDetail: "Ingresso principale",
+    time: "14:15", seats: 3, price: 3.00, car: "Toyota Yaris 2021",
+    rating: 4.6, reviews: 11, badge: "Nuovo", badgeClass: "chip-amber",
+    orario: "pomeriggio", note: "Torno indietro verso le 17:30 se qualcuno ha bisogno."
+  },
+  {
+    id: 4, driver: "Sara Menapace", initials: "SM", av: "av-rose",
+    from: "Borgo Venezia", fromDetail: "Via Longhena 8",
+    to: "Centro Verona", toDetail: "Corso Porta Borsari",
+    time: "12:30", seats: 2, price: 2.00, car: "Renault Clio 2019",
+    rating: 4.7, reviews: 8, badge: "Puntuale", badgeClass: "chip-green",
+    orario: "mezzogiorno", note: ""
+  },
+  {
+    id: 5, driver: "Andrea Boni", initials: "AB", av: "av-green",
+    from: "Quinzano", fromDetail: "Piazza della Chiesa",
+    to: "Zona Industriale Est", toDetail: "Via dell'Industria 40",
+    time: "07:45", seats: 2, price: 1.50, car: "Ford Fiesta 2018",
+    rating: 4.5, reviews: 19, badge: "Frequente", badgeClass: "chip-green",
+    orario: "mattina", note: ""
+  },
+  {
+    id: 6, driver: "Elena Conti", initials: "EC", av: "av-blue",
+    from: "Avesa", fromDetail: "Via Marsala — capolinea bus",
+    to: "Università di Verona", toDetail: "Polo Zanotto",
+    time: "17:30", seats: 3, price: 2.00, car: "Opel Corsa 2023",
+    rating: 4.8, reviews: 5, badge: "Nuovo", badgeClass: "chip-amber",
+    orario: "sera", note: "Torno verso le 20. Se qualcuno lavora in zona fammi sapere."
+  },
+];
+
+let selectedRide = null;
+let historyStack = [];
+
+/* ── MODALS ── */
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeModalOutside(e, id) {
+  if (e.target === e.currentTarget) closeModal(id);
+}
+function switchModal(from, to) {
+  closeModal(from);
+  setTimeout(() => openModal(to), 180);
+}
+
+/* ── LANGUAGE ── */
+function toggleLang() {
+  document.getElementById('lang-menu').classList.toggle('open');
+}
+function setLang(code, flag, name) {
+  document.getElementById('lang-btn').textContent = code;
+  document.querySelectorAll('.lang-opt').forEach(o => o.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('lang-menu').classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  const wrap = document.querySelector('.lang-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('lang-menu').classList.remove('open');
+  }
+});
+
+/* ── NAVIGATION ── */
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function navGo(screenId, navId) {
+  go(screenId);
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(navId).classList.add('active');
+}
+
+function goBack() {
+  go('s-rides');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-rides').classList.add('active');
+}
+
+/* ── RENDER RIDE CARD ── */
+function renderCard(r) {
+  return `<div class="ride-card" onclick="openDetail(${r.id})">
+    <div class="rc-header">
+      <div class="rc-avatar ${r.av}">${r.initials}</div>
+      <div>
+        <div class="rc-name">${r.driver}</div>
+        <div class="rc-meta"><span class="rc-stars">★ ${r.rating}</span> · ${r.reviews} rec.</div>
+      </div>
+      <div class="rc-price">
+        <div class="rc-price-val">€${r.price.toFixed(2)}</div>
+        <div class="rc-price-lbl">a persona</div>
+      </div>
+    </div>
+    <div class="rc-route">
+      <div class="rc-route-row"><div class="rc-dot dot-green"></div><div class="rc-place">${r.from}</div></div>
+      <div class="rc-route-row"><div class="rc-connector"><div class="rc-connector-line"></div></div></div>
+      <div class="rc-route-row"><div class="rc-dot dot-amber"></div><div class="rc-place muted">${r.to}</div></div>
+    </div>
+    <div class="rc-footer">
+      <span class="chip ${r.badgeClass}">${r.badge}</span>
+      <span class="chip chip-blue"><i class="ti ti-armchair" style="font-size:12px"></i> ${r.seats} ${r.seats===1?'posto':'posti'}</span>
+      <span class="rc-time"><i class="ti ti-clock" style="font-size:14px"></i> ${r.time}</span>
+    </div>
+  </div>`;
+}
+
+/* ── HOME ── */
+function renderHome() {
+  const preview = rides.slice(0,3);
+  document.getElementById('home-rides').innerHTML = preview.map(renderCard).join('') +
+    `<div style="padding:0 20px"><button class="btn btn-outline" onclick="navGo('s-rides','nav-rides')">Vedi tutti i passaggi →</button></div>`;
+}
+
+function doHomeSearch() {
+  navGo('s-rides','nav-rides');
+  filterRides('tutti', document.querySelector('.filter-btn'));
+}
+
+/* ── RIDES LIST ── */
+function filterRides(f, el) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const list = f === 'tutti' ? rides : rides.filter(r => r.orario === f);
+  document.getElementById('rides-list').innerHTML = list.length
+    ? list.map(renderCard).join('')
+    : `<div style="text-align:center;padding:40px 20px;color:var(--text3)"><i class="ti ti-car-off" style="font-size:40px;display:block;margin-bottom:12px"></i>Nessun passaggio in questa fascia oraria</div>`;
+}
+
+/* ── DETAIL ── */
+function openDetail(id) {
+  selectedRide = rides.find(r => r.id === id);
+  const r = selectedRide;
+  const noteBlock = r.note
+    ? `<div class="detail-notes"><i class="ti ti-info-circle"></i><p>${r.note}</p></div>`
+    : '';
+  document.getElementById('detail-body').innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-driver-row">
+        <div class="detail-avatar ${r.av}">${r.initials}</div>
+        <div>
+          <div class="detail-name">${r.driver}</div>
+          <div class="detail-stars">★ ${r.rating}</div>
+          <div class="detail-reviews">${r.reviews} recensioni verificate</div>
+        </div>
+      </div>
+      <div class="route-card">
+        <div class="route-stop">
+          <div class="route-stop-dot" style="background:var(--accent)"></div>
+          <div><div class="route-stop-label">${r.from}</div><div class="route-stop-sub">${r.fromDetail}</div></div>
+          <div style="margin-left:auto;font-size:15px;font-weight:600;color:var(--accent)">${r.time}</div>
+        </div>
+        <div class="route-sep">
+          <div class="route-sep-line-wrap"><div class="route-sep-line"></div></div>
+        </div>
+        <div class="route-stop">
+          <div class="route-stop-dot" style="background:var(--accent2)"></div>
+          <div><div class="route-stop-label">${r.to}</div><div class="route-stop-sub">${r.toDetail}</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="info-grid">
+      <div class="info-box"><div class="info-box-label">Posti liberi</div><div class="info-box-val">${r.seats}</div></div>
+      <div class="info-box"><div class="info-box-label">Auto</div><div class="info-box-val" style="font-size:14px">${r.car}</div></div>
+      <div class="info-box" style="grid-column:1/-1">
+        <div class="info-box-label">Contributo spese</div>
+        <div class="info-box-val accent">€${r.price.toFixed(2)} <span style="font-size:14px;color:var(--text3);font-family:var(--font)">a persona</span></div>
+      </div>
+    </div>
+    ${noteBlock}
+    <button class="btn btn-primary" onclick="openConfirm()">Prenota questo passaggio</button>
+    <div class="spacer"></div>
+  `;
+  go('s-detail');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+}
+
+/* ── CONFIRM ── */
+function openConfirm() {
+  const r = selectedRide;
+  document.getElementById('confirm-body').innerHTML = `
+    <div class="confirm-card">
+      <div class="confirm-card-header">Riepilogo viaggio</div>
+      <div class="confirm-row"><span class="confirm-row-label">Conducente</span><span class="confirm-row-val">${r.driver}</span></div>
+      <div class="confirm-row"><span class="confirm-row-label">Partenza</span><span class="confirm-row-val">${r.from}</span></div>
+      <div class="confirm-row"><span class="confirm-row-label">Destinazione</span><span class="confirm-row-val">${r.to}</span></div>
+      <div class="confirm-row"><span class="confirm-row-label">Orario</span><span class="confirm-row-val">${r.time}</span></div>
+      <div class="confirm-row"><span class="confirm-row-label">Auto</span><span class="confirm-row-val">${r.car}</span></div>
+      <div class="confirm-total"><span class="confirm-total-label">Totale da pagare</span><span class="confirm-total-val">€${r.price.toFixed(2)}</span></div>
+    </div>
+    <div class="pickup-box">
+      <i class="ti ti-map-pin"></i>
+      <div>
+        <div class="pickup-label">Punto di ritrovo</div>
+        <div class="pickup-val">${r.fromDetail}</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="doBook()">Paga e prenota — €${r.price.toFixed(2)}</button>
+    <button class="btn btn-outline btn-gap" onclick="go('s-detail')">Annulla</button>
+    <div class="spacer"></div>
+  `;
+  go('s-confirm');
+}
+
+/* ── BOOK ── */
+function doBook() {
+  const r = selectedRide;
+  document.getElementById('success-detail').innerHTML = `
+    <div class="success-detail-row"><span class="sdl">Conducente</span><span class="sdv">${r.driver}</span></div>
+    <div class="success-detail-row"><span class="sdl">Punto di ritrovo</span><span class="sdv">${r.fromDetail}</span></div>
+    <div class="success-detail-row"><span class="sdl">Destinazione</span><span class="sdv">${r.to}</span></div>
+    <div class="success-detail-row"><span class="sdl">Orario partenza</span><span class="sdv">${r.time}</span></div>
+    <div class="success-detail-row"><span class="sdl">Pagato</span><span class="sdv" style="color:var(--accent)">€${r.price.toFixed(2)}</span></div>
+  `;
+  go('s-success');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+}
+
+/* ── OFFER ── */
+function updateOfferPrice(v) {
+  document.getElementById('offer-price-display').textContent = '€' + (v/100).toFixed(2);
+}
+
+function submitOffer() {
+  go('s-home');
+  navGo('s-home','nav-home');
+  setTimeout(() => alert('Passaggio pubblicato! I passeggeri potranno prenotare a breve.'), 200);
+}
+
+/* ── INIT ── */
+renderHome();
+filterRides('tutti', document.querySelector('.filter-btn'));
+</script>
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>CityPass — Geolocalizzazione</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<style>
+:root {
+  --bg:#F5F2ED; --surface:#FDFCFA; --surface2:#EFEBE4;
+  --accent:#2B5F3E; --accent2:#E8A045;
+  --text:#1A1A18; --text2:#6B6860; --text3:#9E9B94;
+  --border:rgba(26,26,24,0.10); --border2:rgba(26,26,24,0.18);
+  --radius:16px; --radius-sm:10px;
+  --shadow:0 2px 16px rgba(26,26,24,0.08); --shadow-lg:0 8px 40px rgba(26,26,24,0.14);
+  --font:'DM Sans',sans-serif; --font-display:'DM Serif Display',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:430px;margin:0 auto;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;gap:12px;padding:14px 16px 12px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;z-index:30}
+.back-btn{width:36px;height:36px;border-radius:50%;background:var(--bg);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);font-size:18px;flex-shrink:0;transition:background .15s;text-decoration:none}
+.back-btn:hover{background:var(--surface2)}
+.topbar-title{font-size:17px;font-weight:600;color:var(--text);flex:1}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#E24B4A;flex-shrink:0;animation:pulse-dot 1.4s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+.live-label{font-size:12px;font-weight:600;color:#E24B4A}
+
+/* MAP */
+#map{flex:1;z-index:1;min-height:0}
+
+/* BOTTOM PANEL */
+.bottom-panel{flex-shrink:0;background:var(--surface);border-top:1px solid var(--border);z-index:20}
+.panel-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:10px auto 0}
+
+/* STATUS PILL */
+.status-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px}
+.status-pill{display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border2);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:500;color:var(--text2)}
+.status-pill.gps-ok{background:#EAF3DE;border-color:#A8D9B8;color:#1E5E30}
+.status-pill.gps-searching{background:#FAEEDA;border-color:#FADFA4;color:#633806}
+.status-pill.gps-error{background:#FDF0EE;border-color:rgba(192,57,43,.2);color:#C0392B}
+.status-icon{font-size:16px}
+
+/* DRIVER CARDS */
+.drivers-scroll{display:flex;gap:10px;padding:4px 16px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.drivers-scroll::-webkit-scrollbar{display:none}
+.driver-chip{flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s;min-width:180px}
+.driver-chip:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+.driver-chip.active{border-color:var(--accent);background:#F0F7F3}
+.dc-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0}
+.av-g{background:#D4EAD9;color:#1E5E30}
+.av-b{background:#D4E4F5;color:#1A4272}
+.av-a{background:#FAE8CC;color:#8A4F00}
+.dc-name{font-size:13px;font-weight:600;color:var(--text);line-height:1.2}
+.dc-dist{font-size:11px;color:var(--text3)}
+.dc-time{margin-left:auto;text-align:right}
+.dc-eta{font-size:13px;font-weight:600;color:var(--accent)}
+.dc-price{font-size:11px;color:var(--text3)}
+
+/* FAB */
+.fab{position:absolute;bottom:180px;right:16px;z-index:15;width:46px;height:46px;border-radius:50%;background:var(--surface);border:1px solid var(--border2);box-shadow:var(--shadow-lg);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:var(--text2);transition:all .15s}
+.fab:hover{background:var(--surface2)}
+.fab.locating{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* POPUP custom */
+.leaflet-popup-content-wrapper{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);padding:0;overflow:hidden}
+.leaflet-popup-content{margin:0}
+.leaflet-popup-tip-container{display:none}
+.map-popup{padding:12px 14px;min-width:160px}
+.mp-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.mp-route{font-size:12px;color:var(--text2);margin-bottom:6px}
+.mp-row{display:flex;justify-content:space-between;font-size:12px}
+.mp-label{color:var(--text3)}
+.mp-val{font-weight:600;color:var(--text)}
+.mp-btn{display:block;width:100%;margin-top:10px;padding:8px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none}
+
+/* ACCURACY RING */
+.leaflet-user-marker{position:relative}
+
+/* TOAST */
+.toast{position:absolute;top:80px;left:50%;transform:translateX(-50%);z-index:100;background:var(--text);color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:500;white-space:nowrap;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="back-btn" href="citypass.html"><i class="ti ti-arrow-left"></i></a>
+  <div class="topbar-title">Conducenti vicini</div>
+  <div class="live-dot"></div>
+  <div class="live-label">LIVE</div>
+</div>
+
+<!-- MAP -->
+<div id="map"></div>
+
+<!-- FAB LOCATE -->
+<button class="fab" id="fab-locate" onclick="centerOnUser()" title="Centrami">
+  <i class="ti ti-current-location" id="fab-icon"></i>
+</button>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- BOTTOM PANEL -->
+<div class="bottom-panel">
+  <div class="panel-handle"></div>
+  <div class="status-bar">
+    <div class="status-pill gps-searching" id="status-pill">
+      <i class="ti ti-gps status-icon" id="status-icon"></i>
+      <span id="status-text">Ricerca GPS…</span>
+    </div>
+    <div style="font-size:12px;color:var(--text3)" id="update-label">—</div>
+  </div>
+  <div class="drivers-scroll" id="drivers-scroll">
+    <!-- populated by JS -->
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script>
+/* ── FAKE DRIVERS DATA ── */
+const DRIVERS = [
+  { id:1, name:"Marco R.", initials:"MR", av:"av-g", from:"San Michele", to:"Centro Verona", eta:"3 min", dist:"280 m", price:"€2.50", lat:0, lng:0, offsetLat:.003, offsetLng:.002 },
+  { id:2, name:"Giulia F.", initials:"GF", av:"av-b", from:"Borgo Venezia", to:"Stazione FS",  eta:"6 min", dist:"650 m", price:"€2.00", lat:0, lng:0, offsetLat:-.002, offsetLng:.004 },
+  { id:3, name:"Luca T.",   initials:"LT", av:"av-a", from:"Quinzano",     to:"Ospedale",      eta:"9 min", dist:"1.1 km", price:"€3.00", lat:0, lng:0, offsetLat:.005, offsetLng:-.003 },
+];
+
+/* ── MAP INIT ── */
+const map = L.map('map', { zoomControl:false, attributionControl:true });
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+  maxZoom:19
+}).addTo(map);
+
+// Custom zoom control — top right
+L.control.zoom({ position:'topright' }).addTo(map);
+
+/* ── MARKERS ── */
+let userMarker = null;
+let userCircle = null;
+let driverMarkers = {};
+let userPos = null;
+
+function userIcon() {
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:18px;height:18px;border-radius:50%;background:#2B5F3E;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35)"></div>`,
+    iconSize:[18,18], iconAnchor:[9,9]
+  });
+}
+
+function driverIcon(initials, color) {
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:40px;height:40px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 3px 12px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#fff">${initials}</div>`,
+    iconSize:[40,40], iconAnchor:[20,20]
+  });
+}
+
+const driverColors = { 'av-g':'#2B5F3E', 'av-b':'#1A4A82', 'av-a':'#8A4F00' };
+
+/* ── GEOLOCATION ── */
+function startGeo() {
+  if (!navigator.geolocation) {
+    setStatus('error', 'GPS non disponibile');
+    useFallbackPos();
+    return;
+  }
+  navigator.geolocation.watchPosition(onPos, onErr, {
+    enableHighAccuracy:true, maximumAge:5000, timeout:10000
+  });
+}
+
+function onPos(pos) {
+  const lat = pos.coords.latitude;
+  const lng = pos.coords.longitude;
+  userPos = { lat, lng };
+  const acc = Math.round(pos.coords.accuracy);
+  setStatus('ok', `GPS attivo · ±${acc}m`);
+  document.getElementById('update-label').textContent = 'Aggiornato ora';
+  document.getElementById('fab-icon').className = 'ti ti-current-location';
+
+  if (!userMarker) {
+    userMarker = L.marker([lat,lng], { icon:userIcon(), zIndexOffset:1000 }).addTo(map);
+    userCircle = L.circle([lat,lng], { radius:acc, color:'#2B5F3E', fillColor:'#2B5F3E', fillOpacity:.08, weight:1.5 }).addTo(map);
+    map.setView([lat,lng], 15);
+    placeDrivers(lat,lng);
+  } else {
+    userMarker.setLatLng([lat,lng]);
+    userCircle.setLatLng([lat,lng]);
+    userCircle.setRadius(acc);
+    animateDrivers(lat,lng);
+  }
+}
+
+function onErr(err) {
+  const msgs = { 1:'Permesso GPS negato', 2:'Posizione non disponibile', 3:'Timeout GPS' };
+  setStatus('error', msgs[err.code] || 'Errore GPS');
+  showToast('Usando posizione di esempio (Verona)');
+  useFallbackPos();
+}
+
+function useFallbackPos() {
+  // Default: Verona centro
+  const lat = 45.4384, lng = 10.9916;
+  userPos = { lat, lng };
+  if (!userMarker) {
+    userMarker = L.marker([lat,lng], { icon:userIcon(), zIndexOffset:1000 }).addTo(map)
+      .bindTooltip('Tu (posizione simulata)', { permanent:false });
+    userCircle = L.circle([lat,lng], { radius:80, color:'#2B5F3E', fillColor:'#2B5F3E', fillOpacity:.08, weight:1.5 }).addTo(map);
+    map.setView([lat,lng], 15);
+    placeDrivers(lat,lng);
+  }
+}
+
+function centerOnUser() {
+  if (userPos) {
+    map.flyTo([userPos.lat, userPos.lng], 15, { duration:.8 });
+    document.getElementById('fab-locate').classList.add('locating');
+    setTimeout(() => document.getElementById('fab-locate').classList.remove('locating'), 1000);
+  }
+}
+
+/* ── DRIVER MARKERS ── */
+function placeDrivers(baseLat, baseLng) {
+  DRIVERS.forEach(d => {
+    d.lat = baseLat + d.offsetLat;
+    d.lng = baseLng + d.offsetLng;
+    const marker = L.marker([d.lat, d.lng], {
+      icon: driverIcon(d.initials, driverColors[d.av])
+    }).addTo(map);
+
+    marker.bindPopup(`
+      <div class="map-popup">
+        <div class="mp-name">${d.name}</div>
+        <div class="mp-route"><i class="ti ti-arrow-right" style="font-size:11px"></i> ${d.from} → ${d.to}</div>
+        <div class="mp-row"><span class="mp-label">Distanza</span><span class="mp-val">${d.dist}</span></div>
+        <div class="mp-row"><span class="mp-label">Arrivo in</span><span class="mp-val">${d.eta}</span></div>
+        <div class="mp-row"><span class="mp-label">Contributo</span><span class="mp-val">${d.price}</span></div>
+        <a class="mp-btn" href="citypass.html">Prenota</a>
+      </div>`, { maxWidth:200, closeButton:false });
+
+    driverMarkers[d.id] = { marker, driver:d };
+  });
+  renderDriverChips();
+  simulateMovement();
+}
+
+function animateDrivers(baseLat, baseLng) {
+  DRIVERS.forEach(d => {
+    d.lat = baseLat + d.offsetLat + (Math.random()-.5)*.0005;
+    d.lng = baseLng + d.offsetLng + (Math.random()-.5)*.0005;
+    if (driverMarkers[d.id]) driverMarkers[d.id].marker.setLatLng([d.lat, d.lng]);
+  });
+}
+
+/* ── SIMULATE MOVEMENT ── */
+function simulateMovement() {
+  setInterval(() => {
+    DRIVERS.forEach(d => {
+      if (!driverMarkers[d.id]) return;
+      d.lat += (Math.random()-.5)*.0003;
+      d.lng += (Math.random()-.5)*.0003;
+      driverMarkers[d.id].marker.setLatLng([d.lat, d.lng]);
+    });
+    document.getElementById('update-label').textContent = 'Aggiornato ora';
+  }, 4000);
+}
+
+/* ── DRIVER CHIPS ── */
+function renderDriverChips() {
+  const cont = document.getElementById('drivers-scroll');
+  cont.innerHTML = DRIVERS.map(d => `
+    <div class="driver-chip" id="chip-${d.id}" onclick="focusDriver(${d.id})">
+      <div class="dc-avatar ${d.av}">${d.initials}</div>
+      <div>
+        <div class="dc-name">${d.name}</div>
+        <div class="dc-dist">${d.dist}</div>
+      </div>
+      <div class="dc-time">
+        <div class="dc-eta">${d.eta}</div>
+        <div class="dc-price">${d.price}</div>
+      </div>
+    </div>`).join('');
+}
+
+function focusDriver(id) {
+  document.querySelectorAll('.driver-chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('chip-'+id).classList.add('active');
+  const { marker, driver } = driverMarkers[id];
+  map.flyTo([driver.lat, driver.lng], 16, { duration:.7 });
+  setTimeout(() => marker.openPopup(), 750);
+}
+
+/* ── STATUS ── */
+function setStatus(type, text) {
+  const pill = document.getElementById('status-pill');
+  const icon = document.getElementById('status-icon');
+  const label = document.getElementById('status-text');
+  pill.className = 'status-pill gps-' + type;
+  icon.className = 'status-icon ti ' + (type==='ok' ? 'ti-gps' : type==='searching' ? 'ti-gps' : 'ti-gps-off');
+  label.textContent = text;
+}
+
+/* ── TOAST ── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ── INIT ── */
+map.setView([45.4384, 10.9916], 14);
+startGeo();
+</script>
+</body>
+</html>
